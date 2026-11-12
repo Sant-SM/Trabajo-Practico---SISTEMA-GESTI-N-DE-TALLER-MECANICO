@@ -1,6 +1,9 @@
 package Clases;
 
+import Enums.EstadoOrden;
+
 import java.sql.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class DBHandler {
     private final static String url = "jdbc:sqlite:taller_mecanico.db";
@@ -14,6 +17,7 @@ public class DBHandler {
         return false;
     }
 
+    //METODO PARA CREAR LAS TABLAS
     public static boolean crearTablas(){
 
         //Tabla Clientes
@@ -50,7 +54,7 @@ public class DBHandler {
 
         //Tabla Ordenes de Trabajo
         String sqlTablaOrdenesTrabajo = "CREATE TABLE ordenes_trabajo (" +
-                                            "id_orden INTEGER PRIMARY KEY  AUTOINCREMENT," +
+                                            "id_orden INTEGER PRIMARY KEY AUTOINCREMENT," +
                                             "estado TEXT NOT NULL CHECK(estado IN('PENDIENTE', 'EN_PROCESO', 'FINALIZADA', 'CANCELADA'))," +
                                             "horas_trabajadas DECIMAL(10, 2) NOT NULL CHECK(horas_trabajadas >= 0)," +
                                             "patente VARCHAR(7) NOT NULL," +
@@ -92,12 +96,108 @@ public class DBHandler {
         return false;
     }
 
+    //GUARDAR CLIENTE
+    public static int guardarCliente(String dni, String nombre, String apellido, String telefono, String email){
+        int filasAfectadas = 0;
+
+        String sqlAddCliente = "INSERT INTO clientes(dni, nombre, apellido, telefono, email) VALUES (?, ?, ?, ?, ?)";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlAddCliente)){
+
+            ps.setString(1, dni);
+            ps.setString(2, nombre);
+            ps.setString(3, apellido);
+            ps.setString(4, telefono);
+            ps.setString(5, email);
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //GUARDAR MECANICO
+    public static int guardarMecanico(String dni, String nombre, String apellido, String especialidad, double salarioXhora){
+        int filasAfectadas = 0;
+
+        String sqlAddMecanico = "INSERT INTO mecanicos(dni, nombre, apellido, especialidad, salario_por_hora) VALUES (?, ?, ?, ?, ?)";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlAddMecanico)){
+
+            ps.setString(1, dni);
+            ps.setString(2, nombre);
+            ps.setString(3, apellido);
+            ps.setString(4, especialidad);
+            ps.setDouble(5, salarioXhora);
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //GUARDAR VEHICULO
+    public static int guardarVehiculo(String patente, double kilometraje, int idModelo, String dni){
+        int filasAfectadas = 0;
+
+        String sqlAddVehiculo = "INSERT INTO vehiculos(patente, kilometraje, id_modelo, dni) VALUES (?, ?, ?, ?)";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlAddVehiculo)){
+
+            ps.setString(1, patente);
+            ps.setDouble(2, kilometraje);
+            ps.setInt(3, idModelo);
+            ps.setString(4, dni);
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //GUARDAR ORDEN DE TRABAJO
+    public static int guardarOrdenDeTrabajo(EstadoOrden estado, double horas_trabajadas, String patente, String dni_mecanico){
+        int idAgregado = -1;
+
+        String sqlAddOrdenTrabajo = "INSERT INTO ordenes_trabajo(estado, horas_trabajadas, patente, dni_mecanico) VALUES (?, ?, ?, ?)";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlAddOrdenTrabajo, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, String.valueOf(estado));
+            ps.setDouble(2, horas_trabajadas);
+            ps.setString(3, patente);
+            ps.setString(4, dni_mecanico);
+
+            ps.executeUpdate();
+
+            try(ResultSet rs = ps.getGeneratedKeys()){
+                while (rs.next()){
+                    idAgregado = rs.getInt(1);
+                }
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return idAgregado;
+    }
+
+
     // todo... METODOS QUE FALTAN:
 
-    //guardarCliente(Cliente c) - void
-    //guardarMecanico(Mecanico m) - void
-    //guardarVehiculo(vehiculo v, int idModelo) - void
-    //guardarOrden(OrdenDeTrabajo O) - void
+    //guardarCliente(Cliente c) - void LISTO
+    //guardarMecanico(Mecanico m) - void LISTO
+    //guardarVehiculo(vehiculo v, int idModelo) - void LIST0
+    //guardarOrden(OrdenDeTrabajo O) - void LISTO
 
     //actualizarStockRepuesto(Repuesto r) - void
 
