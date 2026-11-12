@@ -1,6 +1,8 @@
 package Clases;
 
-public abstract class Persona {
+import Interfaces.Iidentificable;
+
+public abstract class Persona implements Iidentificable <String>{
 
     private String dni;
     private String nombre;
@@ -44,6 +46,11 @@ public abstract class Persona {
 
     public void setTelefono(String telefono) {
         this.telefono = telefono;
+    }
+
+    @Override
+    public String getId() {
+        return this.dni;
     }
 
     @Override
