@@ -9,7 +9,24 @@ public abstract class Persona implements Iidentificable <String>{
     private String apellido;
     private String telefono;
 
-    public Persona(String dni, String nombre, String apellido, String telefono) {
+    public Persona(String dni, String nombre, String apellido, String telefono) throws AccionInvalidaEx {
+
+        if (dni == null) {
+            throw new AccionInvalidaEx("DNI vacio");
+        }
+
+        if (nombre == null) {
+            throw new AccionInvalidaEx("Nombre vacio");
+        }
+
+        if (apellido == null) {
+            throw new AccionInvalidaEx("Apellido vacio");
+        }
+
+        if (telefono == null) {
+            throw new AccionInvalidaEx("Telefono vacio");
+        }
+
         this.dni = dni;
         this.nombre = nombre;
         this.apellido = apellido;

@@ -4,8 +4,14 @@ public class Cliente extends Persona{
 
     private String email;
 
-    public Cliente(String dni, String nombre, String apellido, String telefono, String email) {
+    public Cliente(String dni, String nombre, String apellido, String telefono, String email) throws AccionInvalidaEx {
+
         super(dni, nombre, apellido, telefono);
+
+        if (email == null) {
+            throw new AccionInvalidaEx("Email vacio");
+        }
+
         this.email = email;
     }
 

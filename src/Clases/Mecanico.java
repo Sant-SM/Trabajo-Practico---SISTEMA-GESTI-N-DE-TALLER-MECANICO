@@ -5,8 +5,18 @@ public class Mecanico extends Persona{
     private String especialidad;
     private double salarioPorHora;
 
-    public Mecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salarioPorHora) {
+    public Mecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salarioPorHora) throws AccionInvalidaEx {
+
         super(dni, nombre, apellido, telefono);
+
+        if (especialidad == null) {
+            throw new AccionInvalidaEx("Especialidad vacia");
+        }
+
+        if (salarioPorHora <= 0) {
+            throw new AccionInvalidaEx("Salario por hora invalido");
+        }
+
         this.especialidad = especialidad;
         this.salarioPorHora = salarioPorHora;
     }
