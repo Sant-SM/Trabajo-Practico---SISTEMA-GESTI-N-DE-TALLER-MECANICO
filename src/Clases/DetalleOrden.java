@@ -27,16 +27,8 @@ public class DetalleOrden {
         return repuesto;
     }
 
-    public void setRepuesto(Repuesto repuesto) {
-        this.repuesto = repuesto;
-    }
-
     public int getCantidad() {
         return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
     }
 
     public int getIdRepuesto(){
@@ -44,7 +36,7 @@ public class DetalleOrden {
     }
 
     public double calcularSubtotal(){
-        return repuesto.getPrecio() * cantidad;
+        return this.repuesto.getPrecio() * this.cantidad;
     }
 
 }

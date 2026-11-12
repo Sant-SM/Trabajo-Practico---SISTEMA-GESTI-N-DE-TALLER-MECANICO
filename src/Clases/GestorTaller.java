@@ -1,0 +1,94 @@
+package Clases;
+
+import java.util.ArrayList;
+
+public class GestorTaller {
+
+    // Crear private dbHandler db;
+
+    // Crear constructor que inicie la coneccion
+
+    // ===============================================================================================================================/IMPRIMIR/
+
+    // Este es el metodo genererico
+    public <T> String imprimirListado (ArrayList<T> lista){
+        String info = "\n --- Listado --- \n";
+        for(T elemento : lista){
+            info += lista.toString() + "\n";
+        }
+        info += "-----------------------\n";
+        return info;
+    }
+
+    // ===============================================================================================================================/REGISTROS/
+
+    public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) {
+        Cliente nuevoCliente = new Cliente(dni, nombre, apellido, telefono, email);
+        // db.guardarCliente(nuevoCliente); // Acá se llamaría al INSERT
+        return "EXITO: Cliente '" + nombre + " " + apellido + "' registrado correctamente en el sistema.";
+    }
+
+    public String registrarNuevoMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salario) {
+        Mecanico nuevoMecanico = new Mecanico(dni, nombre, apellido, telefono, especialidad, salario);
+        // db.guardarMecanico(nuevoMecanico);
+        return "EXITO: Mecánico '" + nombre + "' (" + especialidad + ") dado de alta.";
+    }
+
+    public String ingresarVehiculoAlTaller(String patente, double kilometraje, Modelo modelo, Cliente propietario) {
+        Vehiculo nuevoVehiculo = new Vehiculo(patente, kilometraje, propietario, modelo);
+        // db.guardarVehiculo(nuevoVehiculo);
+        return "EXITO: Vehículo patente [" + patente + "] ingreso al taller a nombre de " + propietario.getNombre() + ".";
+    }
+
+    // ===============================================================================================================================/TRANSACCIONES/
+
+    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+
+        StringBuilder ticket = new StringBuilder();
+        ticket.append("\n=== COMPROBANTE DE REPARACIÓN ===\n");
+        ticket.append("Orden N°: ").append(idOrden).append("\n");
+        ticket.append("Vehículo: ").append(vehiculo.getPatente()).append("\n");
+        ticket.append("Mecánico asignado: ").append(mecanico.getNombre()).append("\n");
+        ticket.append("---------------------------------\n");
+
+        // Instanciar la Orden con estado PENDIENTE
+        OrdenDeTrabajo orden = new OrdenDeTrabajo(idOrden, descProblema, vehiculo, mecanico);
+
+        // Buscar repuesto usando la base de datos (DBHandler)
+        // Repuesto rep = db.buscarRepuestoPorId(idRepuestoUsado);
+//        if (rep == null) {
+//            throw new IllegalArgumentException("El repuesto con ID " + idRepuestoUsado + " no fue encontrado en el inventario.");
+//        }
+
+        // Agregar repuesto --- FALTA CREAR REPUESTO (validarlo con exepciones y buscarlo en la dbhandler)
+//        orden.agregarRepuesto(rep, cantidadUsada);
+//        ticket.append("Detalle de piezas:\n");
+//        ticket.append(" - ").append(rep.getNombre()).append(" x").append(cantidadUsada).append(" unidades.\n");
+
+        // Finalizar la orden
+        orden.finalizarOrden(horasTrabajadas);
+        ticket.append("Mano de obra:\n");
+        ticket.append(" - ").append(horasTrabajadas).append(" hs trabajadas.\n");
+        ticket.append("---------------------------------\n");
+
+        // E. Calcular total polimórficamente
+        double total = orden.calcularTotal();
+        ticket.append("ESTADO FINAL: ").append(orden.getEstadoOrden()).append("\n");
+        ticket.append("TOTAL A COBRAR: $").append(total).append("\n");
+        ticket.append("=================================");
+
+        // Guardar en Base de Datos
+        // db.guardarRepuesto(rep); // Guardamos el stock actualizado
+        // db.guardarOrden(orden);  // Guardamos la orden finalizada
+
+        return ticket.toString();
+    }
+
+    // ===============================================================================================================================/CERRAR CONECCION/
+
+    public String cerrarSistema() {
+        //db.desconectar();
+        return "Sistema cerrado. Conexión a SQLite finalizada.";
+    }
+
+}
