@@ -11,4 +11,19 @@ public class Modelo {
         this.linea = linea;
         this.anio = anio;
     }
+
+    public String getMarca() {
+        return marca;
+    }
+
+    public String getLinea() {
+        return linea;
+    }
+
+    public int getAnio() {
+        return anio;
+    }
+
+
+
 }

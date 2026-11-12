@@ -1,26 +1,28 @@
 package Clases;
 
 import Enums.EstadoOrden;
+import Interfaces.Ifacturable;
 import Interfaces.Iidentificable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public class OrdenDeTrabajo implements Iidentificable <Integer>{
+public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
 
     private int idOrden;
     private String descripcionProblema;
     private double horasTrabajadas;
     private EstadoOrden estadoOrden;
-    private HashMap<Integer, DetalleOrden> detallesOrden;
+    private ArrayList<DetalleOrden> detallesOrden;
     private Vehiculo vehiculo;
     private Mecanico mecanico;
 
-    public OrdenDeTrabajo(int idOrden, String descripcionProblema, double horasTrabajadas, EstadoOrden estadoOrden, Vehiculo vehiculo, Mecanico mecanico) {
+    public OrdenDeTrabajo(int idOrden, String descripcionProblema, Vehiculo vehiculo, Mecanico mecanico) {
         this.idOrden = idOrden;
         this.descripcionProblema = descripcionProblema;
-        this.horasTrabajadas = horasTrabajadas;
-        this.estadoOrden = estadoOrden;
-        this.detallesOrden = new HashMap<>();
+        this.horasTrabajadas = 0;
+        this.estadoOrden = EstadoOrden.PENDIENTE;
+        this.detallesOrden = new ArrayList<>();
         this.vehiculo = vehiculo;
         this.mecanico = mecanico;
     }
@@ -57,11 +59,11 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>{
         this.estadoOrden = estadoOrden;
     }
 
-    public HashMap<Integer, DetalleOrden> getDetallesOrden() {
+    public ArrayList<DetalleOrden> getDetallesOrden() {
         return detallesOrden;
     }
 
-    public void setDetallesOrden(HashMap<Integer, DetalleOrden> detallesOrden) {
+    public void setDetallesOrden(ArrayList<DetalleOrden> detallesOrden) {
         this.detallesOrden = detallesOrden;
     }
 
@@ -86,18 +88,42 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>{
         return this.idOrden;
     }
 
-    public Repuesto buscarRepuestoID(int idRep){
-        for(DetalleOrden d : detallesOrden.values()){
-            if(d.getIdRepuesto() == idRep){
-                return d.getRepuesto();
-            }
+    public void agregarRepuesto(Repuesto repuesto, int cantidad) /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+        if (this.estadoOrden == EstadoOrden.FINALIZADA || this.estadoOrden == EstadoOrden.CANCELADA) {
+            //throw new OrdenInvalidaException("No se pueden agregar repuestos a una orden cerrada.");
         }
-        return null;
+
+        repuesto.descontarStock(cantidad);
+
+        DetalleOrden nuevoDetalle = new DetalleOrden(repuesto, cantidad);
+
+        this.detallesOrden.add(nuevoDetalle);
+
+        if (this.estadoOrden == EstadoOrden.PENDIENTE) {
+            this.estadoOrden = EstadoOrden.EN_PROCESO;
+        }
     }
 
-    public void añadirRepuesto (int idRepuesto, int cantidad){
-        DetalleOrden detalleOrden = new DetalleOrden(buscarRepuestoID(idRepuesto), cantidad);
-        detallesOrden.put(1, detalleOrden);
+    public void finalizarOrden(double horasTotales) /*throws OrdenInvalidaException*/ {
+        if (this.estadoOrden != EstadoOrden.EN_PROCESO) {
+            //throw new OrdenInvalidaException("Solo se pueden finalizar órdenes En Proceso.");
+        }
+        this.horasTrabajadas = horasTotales;
+        this.estadoOrden = EstadoOrden.FINALIZADA;
     }
 
+    @Override
+    public double calcularTotal() {
+        double total = 0;
+
+        total += (this.mecanico.getSalarioPorHora() * this.horasTrabajadas);
+
+        // Suma el subtotal de repuestos
+        for (DetalleOrden detalle : this.detallesOrden) {
+            total += detalle.calcularSubtotal();
+        }
+
+        return total;
+    }
 }
+

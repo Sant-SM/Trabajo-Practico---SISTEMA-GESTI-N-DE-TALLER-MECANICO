@@ -41,3 +41,9 @@ bin/
 # Archivos de configuración local con credenciales
 config.properties
 .env
+
+### SQLITE ###
+
+# Ignorar bases de datos locales de SQLite
+*.db
+*.sqlite

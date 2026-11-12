@@ -20,10 +20,6 @@ public abstract class Persona implements Iidentificable <String>{
         return dni;
     }
 
-    public void setDni(String dni) {
-        this.dni = dni;
-    }
-
     public String getNombre() {
         return nombre;
     }

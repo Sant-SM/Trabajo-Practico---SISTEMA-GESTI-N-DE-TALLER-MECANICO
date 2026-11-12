@@ -1,6 +1,8 @@
 package Clases;
 
-public class Vehiculo {
+import Interfaces.Iidentificable;
+
+public class Vehiculo implements Iidentificable <String> {
 
     private String patente;
     private Double kilometraje;
@@ -18,34 +20,37 @@ public class Vehiculo {
         return patente;
     }
 
-    public void setPatente(String patente) {
-        this.patente = patente;
-    }
-
     public Double getKilometraje() {
         return kilometraje;
-    }
-
-    public void setKilometraje(Double kilometraje) {
-        this.kilometraje = kilometraje;
     }
 
     public Cliente getPropietario() {
         return propietario;
     }
 
-    public void setPropietario(Cliente propietario) {
-        this.propietario = propietario;
-    }
-
     public Modelo getModelo() {
         return modelo;
     }
 
-    public void setModelo(Modelo modelo) {
-        this.modelo = modelo;
+    public void setPropietario(Cliente propietario) {
+        this.propietario = propietario;
     }
 
+    public void setKilometraje(Double kilometraje) {
+        this.kilometraje = kilometraje;
+    }
 
+    @Override
+    public String getId() {
+        return this.patente;
+    }
 
+    public void actualizarKilometraje(double nuevoKilometraje) {
+        if(nuevoKilometraje > this.kilometraje) {
+            this.kilometraje = nuevoKilometraje;
+        } else {
+            System.out.println("Error: El kilometraje no puede reducirse.");
+        }
+    }
 }
+

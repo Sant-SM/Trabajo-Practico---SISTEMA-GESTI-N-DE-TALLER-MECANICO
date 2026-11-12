@@ -20,32 +20,20 @@ public class Repuesto implements Iidentificable <Integer> {
         return idRepuesto;
     }
 
-    public void setIdRepuesto(int idRepuesto) {
-        this.idRepuesto = idRepuesto;
-    }
-
     public String getNombre() {
         return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 
     public double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
-
     public int getStock() {
         return stock;
     }
 
-    public void setStock(int stock) {
-        this.stock = stock;
+    public void setPrecio(double precio) {
+        this.precio = precio;
     }
 
     @Override
@@ -53,8 +41,13 @@ public class Repuesto implements Iidentificable <Integer> {
         return this.idRepuesto;
     }
 
-    public void descontarStock(int cantidad){
-        //verificar que el stock sea mayor que la cantidad (exepciones)
-        this.stock = this.stock - cantidad;
+    public void descontarStock(int cantidadUsada) /*throws exepcionstockinsuficiente*/ {
+        if(cantidadUsada <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");
+        }
+        if(this.stock < cantidadUsada) {
+            //throw new "exepcionstockinsuficiente" ("No hay stock suficiente de: " + this.nombre + ". Disponible: " + this.stock);
+        }
+        this.stock -= cantidadUsada;
     }
 }
