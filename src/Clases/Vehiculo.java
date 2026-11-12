@@ -7,7 +7,24 @@ public class Vehiculo {
     private Cliente propietario;
     private Modelo modelo;
 
-    public Vehiculo(String patente, Double kilometraje, Cliente propietario, Modelo modelo) {
+    public Vehiculo(String patente, Double kilometraje, Cliente propietario, Modelo modelo) throws AccionInvalidaEx {
+
+        if (patente == null) {
+            throw new AccionInvalidaEx("Patente vacia");
+        }
+
+        if (kilometraje == null || kilometraje < 0) {
+            throw new AccionInvalidaEx("Kilometraje invalido");
+        }
+
+        if (propietario == null) {
+            throw new AccionInvalidaEx("Propietario invalido");
+        }
+
+        if (modelo == null) {
+            throw new AccionInvalidaEx("Modelo invalido");
+        }
+
         this.patente = patente;
         this.kilometraje = kilometraje;
         this.propietario = propietario;

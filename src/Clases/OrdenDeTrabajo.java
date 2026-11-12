@@ -15,7 +15,28 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>{
     private Vehiculo vehiculo;
     private Mecanico mecanico;
 
-    public OrdenDeTrabajo(int idOrden, String descripcionProblema, double horasTrabajadas, EstadoOrden estadoOrden, Vehiculo vehiculo, Mecanico mecanico) {
+    public OrdenDeTrabajo(int idOrden, String descripcionProblema, double horasTrabajadas, EstadoOrden estadoOrden, Vehiculo vehiculo, Mecanico mecanico) throws AccionInvalidaEx {
+
+        if (descripcionProblema == null) {
+            throw new AccionInvalidaEx("Descripcion vacia");
+        }
+
+        if (horasTrabajadas < 0) {
+            throw new AccionInvalidaEx("Horas trabajadas invalidas");
+        }
+
+        if (estadoOrden == null) {
+            throw new AccionInvalidaEx("Estado invalido");
+        }
+
+        if (vehiculo == null) {
+            throw new AccionInvalidaEx("Vehiculo invalido");
+        }
+
+        if (mecanico == null) {
+            throw new AccionInvalidaEx("Mecanico invalido");
+        }
+
         this.idOrden = idOrden;
         this.descripcionProblema = descripcionProblema;
         this.horasTrabajadas = horasTrabajadas;
@@ -96,7 +117,7 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>{
     }
 
     public void añadirRepuesto (int idRepuesto, int cantidad){
-        DetalleOrden detalleOrden = new DetalleOrden(buscarRepuestoID(idRepuesto), cantidad);
+        DetalleOrden detalleOrden = new DetalleOrden(idRepuesto, cantidad);
         detallesOrden.put(1, detalleOrden);
     }
 
