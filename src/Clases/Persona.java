@@ -46,6 +46,13 @@ public abstract class Persona {
         this.telefono = telefono;
     }
 
-
-
+    @Override
+    public String toString() {
+        return "Persona{" +
+                "dni='" + dni + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", apellido='" + apellido + '\'' +
+                ", telefono='" + telefono + '\'' +
+                '}';
+    }
 }

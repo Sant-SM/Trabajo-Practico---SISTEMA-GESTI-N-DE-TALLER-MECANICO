@@ -26,4 +26,16 @@ public class Mecanico extends Persona{
     public void setSalarioPorHora(double salarioPorHora) {
         this.salarioPorHora = salarioPorHora;
     }
+
+    @Override
+    public String toString() {
+        return "Mecanico{" +
+                super.toString() +
+                "especialidad='" + especialidad + '\'' +
+                ", salarioPorHora=" + salarioPorHora +
+                '}';
+    }
+
+
+
 }
