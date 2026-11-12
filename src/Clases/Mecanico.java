@@ -1,5 +1,7 @@
 package Clases;
 
+import Exepciones.AccionInvalidaEx;
+
 public class Mecanico extends Persona{
 
     private String especialidad;

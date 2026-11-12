@@ -1,5 +1,6 @@
 package Clases;
 
+import Exepciones.AccionInvalidaEx;
 import Interfaces.Iidentificable;
 
 public class Vehiculo implements Iidentificable <String> {

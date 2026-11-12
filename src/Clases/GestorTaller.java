@@ -27,19 +27,19 @@ public class GestorTaller {
 
     // ===============================================================================================================================/REGISTROS/
 
-    public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) {
+    public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) throws AccionInvalidaEx {
         Cliente nuevoCliente = new Cliente(dni, nombre, apellido, telefono, email);
         // db.guardarCliente(nuevoCliente); // Acá se llamaría al INSERT
         return "EXITO: Cliente '" + nombre + " " + apellido + "' registrado correctamente en el sistema.";
     }
 
-    public String registrarNuevoMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salario) {
+    public String registrarNuevoMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salario) throws AccionInvalidaEx {
         Mecanico nuevoMecanico = new Mecanico(dni, nombre, apellido, telefono, especialidad, salario);
         // db.guardarMecanico(nuevoMecanico);
         return "EXITO: Mecánico '" + nombre + "' (" + especialidad + ") dado de alta.";
     }
 
-    public String ingresarVehiculoAlTaller(String patente, double kilometraje, Modelo modelo, Cliente propietario) {
+    public String ingresarVehiculoAlTaller(String patente, double kilometraje, Modelo modelo, Cliente propietario) throws AccionInvalidaEx {
         Vehiculo nuevoVehiculo = new Vehiculo(patente, kilometraje, propietario, modelo);
         // db.guardarVehiculo(nuevoVehiculo);
         return "EXITO: Vehículo patente [" + patente + "] ingreso al taller a nombre de " + propietario.getNombre() + ".";

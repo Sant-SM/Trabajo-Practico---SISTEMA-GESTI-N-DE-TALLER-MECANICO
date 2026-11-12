@@ -1,5 +1,6 @@
 package Clases;
 
+import Exepciones.AccionInvalidaEx;
 import Interfaces.Iidentificable;
 
 public class Repuesto implements Iidentificable <Integer> {

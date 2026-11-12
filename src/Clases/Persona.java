@@ -1,5 +1,6 @@
 package Clases;
 
+import Exepciones.AccionInvalidaEx;
 import Interfaces.Iidentificable;
 
 public abstract class Persona implements Iidentificable <String>{
