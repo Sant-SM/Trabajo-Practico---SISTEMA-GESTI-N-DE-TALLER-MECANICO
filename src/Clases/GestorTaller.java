@@ -1,12 +1,17 @@
 package Clases;
 
+import Exepciones.AccionInvalidaEx;
+
 import java.util.ArrayList;
 
 public class GestorTaller {
 
-    // Crear private dbHandler db;
+    private DBHandler db;
 
-    // Crear constructor que inicie la coneccion
+    public GestorTaller() {
+        this.db = new DBHandler();
+        this.db.conectar(); // todo... CONECTAR es un metodo INNECESARIO si las conecciones duran lo que dura la instancia del metodo... Considerarlo
+    }
 
     // ===============================================================================================================================/IMPRIMIR/
 
@@ -42,7 +47,7 @@ public class GestorTaller {
 
     // ===============================================================================================================================/TRANSACCIONES/
 
-    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) throws AccionInvalidaEx /*throws StockInsuficienteException, OrdenInvalidaException*/ {
 
         StringBuilder ticket = new StringBuilder();
         ticket.append("\n=== COMPROBANTE DE REPARACIÓN ===\n");
@@ -86,9 +91,11 @@ public class GestorTaller {
 
     // ===============================================================================================================================/CERRAR CONECCION/
 
-    public String cerrarSistema() {
-        //db.desconectar();
-        return "Sistema cerrado. Conexión a SQLite finalizada.";
-    }
+    // Por ahora es innecesario
+
+//    public String cerrarSistema() {
+//        //db.desconectar();
+//        return "Sistema cerrado. Conexión a SQLite finalizada.";
+//    }
 
 }

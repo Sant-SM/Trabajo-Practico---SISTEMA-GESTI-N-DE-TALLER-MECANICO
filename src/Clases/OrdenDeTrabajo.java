@@ -1,6 +1,7 @@
 package Clases;
 
 import Enums.EstadoOrden;
+import Exepciones.AccionInvalidaEx;
 import Interfaces.Ifacturable;
 import Interfaces.Iidentificable;
 
@@ -17,7 +18,28 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
     private Vehiculo vehiculo;
     private Mecanico mecanico;
 
-    public OrdenDeTrabajo(int idOrden, String descripcionProblema, Vehiculo vehiculo, Mecanico mecanico) {
+    public OrdenDeTrabajo(int idOrden, String descripcionProblema, Vehiculo vehiculo, Mecanico mecanico) throws AccionInvalidaEx {
+        if (descripcionProblema == null) {
+            throw new AccionInvalidaEx("Descripcion vacia");
+        }
+
+        if (horasTrabajadas < 0) {
+            throw new AccionInvalidaEx("Horas trabajadas invalidas");
+        }
+
+        if (estadoOrden == null) {
+            throw new AccionInvalidaEx("Estado invalido");
+        }
+
+        if (vehiculo == null) {
+            throw new AccionInvalidaEx("Vehiculo invalido");
+        }
+
+        if (mecanico == null) {
+            throw new AccionInvalidaEx("Mecanico invalido");
+        }
+
+
         this.idOrden = idOrden;
         this.descripcionProblema = descripcionProblema;
         this.horasTrabajadas = 0;

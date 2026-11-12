@@ -1,4 +1,4 @@
-package Clases;
+package Exepciones;
 
 public class AccionInvalidaEx extends Exception {
     public AccionInvalidaEx(String message) {

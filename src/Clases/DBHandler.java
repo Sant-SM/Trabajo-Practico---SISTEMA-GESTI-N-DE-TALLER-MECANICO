@@ -92,6 +92,22 @@ public class DBHandler {
         return false;
     }
 
+    // todo... METODOS QUE FALTAN:
+
+    //guardarCliente(Cliente c) - void
+    //guardarMecanico(Mecanico m) - void
+    //guardarVehiculo(vehiculo v, int idModelo) - void
+    //guardarOrden(OrdenDeTrabajo O) - void
+
+    //actualizarStockRepuesto(Repuesto r) - void
+
+    //obtenerRepuestoPorID(int idRepuesto) - retorna Repuesto
+    //obtenerClientePorDNI(String dni) - retorna Cliente
+    //obtenerMecanicoPorDNI(String dni) - retorna Mecanico
+    //obtenerModeloPorID(int idModelo) - reotnra Modelo
+    //obtenerVehiculoPorPatente(String patente) - retorna Vehiculo
+    //obtenerOrden(int idOrden) - retorna OrdenDeTrabajo
+
 
 
 }
