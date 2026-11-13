@@ -49,6 +49,10 @@ public class Repuesto implements Iidentificable <Integer> {
         return precio;
     }
 
+    public void setStock(int stock) {
+        this.stock = stock;
+    }
+
     public int getStock() {
         return stock;
     }

@@ -204,6 +204,34 @@ public class GestorTaller {
         return "EXITO: Vehiculo patente [" + patente + "] ingreso al taller a nombre de " + propietario.getNombre() + ".";
     }
 
+    public Vehiculo buscarVehiculoPorPatente(String patente) throws AccionInvalidaEx{
+        if(!cacheVehiculos.existe(patente)){
+            throw new AccionInvalidaEx("No existe vehiculo con esa patente");
+        }
+
+        Vehiculo vehiculo = cacheVehiculos.obtener(patente);
+
+        return vehiculo;
+    }
+
+    public String actualizarKilometraje(String patente, double nuevoKilometros) throws AccionInvalidaEx, SQLException {
+        if(!cacheVehiculos.existe(patente)){
+            throw new AccionInvalidaEx("No existe vehiculo con esa patente");
+        }
+
+        Vehiculo v = cacheVehiculos.obtener(patente);
+
+        int filasAfectadas = DBHandler.actualizarKilometrajeVehiculo(patente, nuevoKilometros);
+
+        if(filasAfectadas != 1){
+            throw new AccionInvalidaEx("No se pudo actualizar kilometraje");
+        }
+
+        v.setKilometraje(nuevoKilometros);
+
+        return "Actualizacion Exitosa";
+    }
+
 
     // ===============================================================================================================================/REPUESTOS E INVENTARIO/
 
@@ -221,6 +249,34 @@ public class GestorTaller {
         cacheRepuestos.agregar(idAgregado, nuevoRepuesto);
 
         return "EXITO: Repuesto ID [" + nuevoRepuesto.getId() + "] se agrego correctamente";
+    }
+
+    public Repuesto obtenerRepuestoPorID(int idRepuesto) throws AccionInvalidaEx{
+        if(!cacheRepuestos.existe(idRepuesto)){
+            throw new AccionInvalidaEx("No se encuentra repuesto con ese id");
+        }
+
+        Repuesto repuesto = cacheRepuestos.obtener(idRepuesto);
+
+        return repuesto;
+    }
+
+    public String ingresarStock(int idRepuesto, int cantidadAgregada) throws AccionInvalidaEx, SQLException {
+        if(!cacheRepuestos.existe(idRepuesto)){
+            throw new AccionInvalidaEx("No existe repuesto con ese id");
+        }
+
+        Repuesto r = cacheRepuestos.obtener(idRepuesto);
+
+        cantidadAgregada += r.getStock();
+
+        if(!DBHandler.actualizarStockRepuesto(idRepuesto, cantidadAgregada)){
+            throw new AccionInvalidaEx("No se pudo Actualizar el stock");
+        }
+
+        r.setStock(cantidadAgregada);
+
+        return "Stock actualizado con exito";
     }
 
 
