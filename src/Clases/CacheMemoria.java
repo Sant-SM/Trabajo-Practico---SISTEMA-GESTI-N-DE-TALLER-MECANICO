@@ -26,6 +26,10 @@ public class CacheMemoria<K, T> {
         return cache.containsKey(clave);
     }
 
-    public void cargarTodos(HashMap<K, T> elementos){cache.putAll(elementos);}
+    public void cargarTodos(HashMap<K, T> elementos){
+        if(elementos != null) {
+            cache.putAll(elementos);
+        }
+    }
 }
 
