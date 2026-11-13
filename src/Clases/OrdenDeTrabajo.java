@@ -2,6 +2,8 @@ package Clases;
 
 import Enums.EstadoOrden;
 import Exepciones.AccionInvalidaEx;
+import Exepciones.OrdenInvalidaException;
+import Exepciones.StockInsuficienteException;
 import Interfaces.Ifacturable;
 import Interfaces.Iidentificable;
 
@@ -110,9 +112,9 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         return this.idOrden;
     }
 
-    public void agregarRepuesto(Repuesto repuesto, int cantidad) /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+    public void agregarRepuesto(Repuesto repuesto, int cantidad) throws StockInsuficienteException, OrdenInvalidaException {
         if (this.estadoOrden == EstadoOrden.FINALIZADA || this.estadoOrden == EstadoOrden.CANCELADA) {
-            //throw new OrdenInvalidaException("No se pueden agregar repuestos a una orden cerrada.");
+            throw new OrdenInvalidaException("No se pueden agregar repuestos a una orden cerrada.");
         }
 
         repuesto.descontarStock(cantidad);
@@ -126,9 +128,9 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         }
     }
 
-    public void finalizarOrden(double horasTotales) /*throws OrdenInvalidaException*/ {
+    public void finalizarOrden(double horasTotales) throws OrdenInvalidaException{
         if (this.estadoOrden != EstadoOrden.EN_PROCESO) {
-            //throw new OrdenInvalidaException("Solo se pueden finalizar órdenes En Proceso.");
+            throw new OrdenInvalidaException("Solo se pueden finalizar órdenes En Proceso.");
         }
         this.horasTrabajadas = horasTotales;
         this.estadoOrden = EstadoOrden.FINALIZADA;

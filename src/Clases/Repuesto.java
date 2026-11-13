@@ -1,6 +1,7 @@
 package Clases;
 
 import Exepciones.AccionInvalidaEx;
+import Exepciones.StockInsuficienteException;
 import Interfaces.Iidentificable;
 
 public class Repuesto implements Iidentificable <Integer> {
@@ -59,12 +60,12 @@ public class Repuesto implements Iidentificable <Integer> {
         return this.idRepuesto;
     }
 
-    public void descontarStock(int cantidadUsada) /*throws exepcionstockinsuficiente*/ {
+    public void descontarStock(int cantidadUsada) throws StockInsuficienteException {
         if(cantidadUsada <= 0) {
-            throw new IllegalArgumentException("La cantidad debe ser mayor a cero.");
+            throw new StockInsuficienteException("La cantidad debe ser mayor a cero.");
         }
         if(this.stock < cantidadUsada) {
-            //throw new "exepcionstockinsuficiente" ("No hay stock suficiente de: " + this.nombre + ". Disponible: " + this.stock);
+            throw new StockInsuficienteException ("No hay stock suficiente de: " + this.nombre + ". Disponible: " + this.stock);
         }
         this.stock -= cantidadUsada;
     }
