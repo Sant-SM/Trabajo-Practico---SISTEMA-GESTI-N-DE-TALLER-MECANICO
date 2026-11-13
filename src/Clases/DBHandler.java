@@ -14,6 +14,7 @@ public class DBHandler {
 
     public static boolean conectar() throws SQLException {
         try (Connection connection = DriverManager.getConnection(url)) {
+            crearTablas();
             return true;
         }
     }

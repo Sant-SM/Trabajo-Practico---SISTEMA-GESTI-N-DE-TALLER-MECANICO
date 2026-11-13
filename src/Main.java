@@ -1,3 +1,4 @@
+import Clases.DBHandler;
 import Clases.GestorTaller;
 import Clases.OrdenDeTrabajo;
 import Exepciones.AccionInvalidaEx;
@@ -10,6 +11,13 @@ public class Main {
     public static void main(String[] args) {
         Scanner teclado = new Scanner(System.in);
         GestorTaller gestor;
+
+//        try{
+//            DBHandler.conectar();
+//
+//        } catch (SQLException e) {
+//            System.out.println("CACA");
+//        }
 
         try {
             gestor = new GestorTaller();

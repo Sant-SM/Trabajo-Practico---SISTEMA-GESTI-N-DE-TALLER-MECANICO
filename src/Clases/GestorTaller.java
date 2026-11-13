@@ -23,7 +23,7 @@ public class GestorTaller {
 
     public GestorTaller() throws SQLException, AccionInvalidaEx {
         this.db = new DBHandler();
-        this.db.conectar(); // todo... CONECTAR es un metodo INNECESARIO si las conexiones duran lo que dura la instancia del metodo... Considerarlo
+     //   DBHandler.crearTablas();
 
         this.cacheClientes = new CacheMemoria<>();
         this.cacheClientes.cargarTodos(DBHandler.obtenerTodosLosClientes());
