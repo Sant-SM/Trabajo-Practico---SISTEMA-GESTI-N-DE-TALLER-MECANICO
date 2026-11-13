@@ -4,6 +4,7 @@ import Exepciones.AccionInvalidaEx;
 
 public class Modelo {
 
+    private int id;
     private String marca;
     private String linea;
     private int anio;
@@ -22,6 +23,13 @@ public class Modelo {
             throw new AccionInvalidaEx("Anio invalido");
         }
 
+        this.marca = marca;
+        this.linea = linea;
+        this.anio = anio;
+    }
+
+    public Modelo(int id, String marca, String linea, int anio) {
+        this.id = id;
         this.marca = marca;
         this.linea = linea;
         this.anio = anio;

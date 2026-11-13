@@ -49,6 +49,15 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         this.mecanico = mecanico;
     }
 
+    public OrdenDeTrabajo(int idOrden, String descripcionProblema, double horasTrabajadas, EstadoOrden estadoOrden, Vehiculo vehiculo, Mecanico mecanico) {
+        this.idOrden = idOrden;
+        this.descripcionProblema = descripcionProblema;
+        this.horasTrabajadas = horasTrabajadas;
+        this.estadoOrden = estadoOrden;
+        this.vehiculo = vehiculo;
+        this.mecanico = mecanico;
+    }
+
     public int getIdOrden() {
         return idOrden;
     }
