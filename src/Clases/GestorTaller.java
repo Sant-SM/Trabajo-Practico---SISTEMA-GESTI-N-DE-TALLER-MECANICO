@@ -1,8 +1,10 @@
 
 package Clases;
 
+import Enums.EstadoOrden;
 import Exepciones.AccionInvalidaEx;
 import Exepciones.OrdenInvalidaException;
+import Exepciones.StockInsuficienteException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -282,7 +284,12 @@ public class GestorTaller {
 
     // ===============================================================================================================================/ORDENES/
 
-    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) throws AccionInvalidaEx, OrdenInvalidaException /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) throws AccionInvalidaEx, OrdenInvalidaException, StockInsuficienteException, SQLException /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+
+        if(!cacheRepuestos.existe(idRepuestoUsado)){
+            throw new AccionInvalidaEx("No existe repuesto con ese id");
+        }
+
 
         StringBuilder ticket = new StringBuilder();
         ticket.append("\n=== COMPROBANTE DE REPARACION ===\n");
@@ -291,37 +298,36 @@ public class GestorTaller {
         ticket.append("Mecanico asignado: ").append(mecanico.getNombre()).append("\n");
         ticket.append("---------------------------------\n");
 
-        // Instanciar la Orden con estado PENDIENTE
+
         OrdenDeTrabajo orden = new OrdenDeTrabajo(idOrden, descProblema, vehiculo, mecanico);
 
-        // Buscar repuesto usando la base de datos (DBHandler)
-        // Repuesto rep = db.buscarRepuestoPorId(idRepuestoUsado);
-//        if (rep == null) {
-//            throw new IllegalArgumentException("El repuesto con ID " + idRepuestoUsado + " no fue encontrado en el inventario.");
-//        }
 
-        // Agregar repuesto --- FALTA CREAR REPUESTO (validarlo con excepciones y buscarlo en la dbhandler)
-//        orden.agregarRepuesto(rep, cantidadUsada);
-//        ticket.append("Detalle de piezas:\n");
-//        ticket.append(" - ").append(rep.getNombre()).append(" x").append(cantidadUsada).append(" unidades.\n");
+        Repuesto repuestoUsado = cacheRepuestos.obtener(idRepuestoUsado);
 
-        // Finalizar la orden
+
+        orden.agregarRepuesto(repuestoUsado, cantidadUsada);
+
+        ticket.append("Detalle de piezas: \n");
+
+        ticket.append(" - ").append(repuestoUsado.getNombre()).append(" x ").append(cantidadUsada).append(" unidades\n");
+        
         orden.finalizarOrden(horasTrabajadas);
         ticket.append("Mano de obra:\n");
         ticket.append(" - ").append(horasTrabajadas).append(" hs trabajadas.\n");
         ticket.append("---------------------------------\n");
 
-        // E. Calcular total polimorficamente
         double total = orden.calcularTotal();
         ticket.append("ESTADO FINAL: ").append(orden.getEstadoOrden()).append("\n");
         ticket.append("TOTAL A COBRAR: $").append(total).append("\n");
         ticket.append("=================================");
 
-        // Guardar en Base de Datos
-        // db.guardarRepuesto(rep); // Guardamos el stock actualizado
+        DBHandler.actualizarStockRepuesto(repuestoUsado.getIdRepuesto(), repuestoUsado.getStock());
+        DBHandler.guardarOrdenDeTrabajo(descProblema, orden.getEstadoOrden(), horasTrabajadas, vehiculo.getPatente(), mecanico.getDni());
         // db.guardarOrden(orden);  // Guardamos la orden finalizada
 
         return ticket.toString();
     }
+
+
 
 }
