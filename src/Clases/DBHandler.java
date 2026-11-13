@@ -444,7 +444,7 @@ public class DBHandler {
     }
 
     //OBTENER VEHICULO POR PATENTE
-    public static Vehiculo getVehiculoPorPatente(String patente){
+    public static Vehiculo getVehiculoPorPatente(String patente) throws SQLException, AccionInvalidaEx{
         Vehiculo buscado = null;
 
         String sqlGetVehiculo = "SELECT * FROM vehiculos WHERE patente = ?";
@@ -464,12 +464,12 @@ public class DBHandler {
 
                     Cliente cliente = getClientePorDNI(dni);
                     if(cliente == null){
-                        //TODO agregar exception
+                        throw new AccionInvalidaEx("El cliente es nulo");
                     }
 
                     Modelo modelo = getModeloPorID(idModelo);
                     if(modelo == null) {
-                        //TODO agregar exception
+                        throw new AccionInvalidaEx("El modelo esta vacio");
                     }
                     buscado = new Vehiculo(patenteB, kms, cliente, modelo);
                 }
