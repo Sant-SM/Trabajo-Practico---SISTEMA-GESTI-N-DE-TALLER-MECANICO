@@ -6,6 +6,7 @@ import Enums.EstadoOrden;
 import Exepciones.AccionInvalidaEx;
 
 import java.sql.*;
+import java.util.HashMap;
 
 public class DBHandler {
 
@@ -580,4 +581,120 @@ public class DBHandler {
 
         return filasAfectadas;
     }
+
+
+    // TRAER CLIENTES
+    public static HashMap<String, Cliente> obtenerTodosLosClientes() throws SQLException, AccionInvalidaEx {
+
+        HashMap<String, Cliente> clientes = new HashMap<>();
+
+        String sql = "SELECT * FROM clientes";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String dni = rs.getString("dni");
+                String nombre = rs.getString("nombre");
+                String apellido = rs.getString("apellido");
+                String telefono = rs.getString("telefono");
+                String email = rs.getString("email");
+
+                Cliente cliente = new Cliente(dni, nombre, apellido, telefono, email);
+
+                clientes.put(dni, cliente);
+            }
+        }
+
+        return clientes;
+    }
+
+
+    // TRAER MECANICOS
+    public static HashMap<String, Mecanico> obtenerTodosLosMecanicos() throws SQLException, AccionInvalidaEx {
+
+        HashMap<String, Mecanico> mecanicos = new HashMap<>();
+
+        String sql = "SELECT * FROM mecanicos";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String dni = rs.getString("dni");
+                String nombre = rs.getString("nombre");
+                String apellido = rs.getString("apellido");
+                String telefono = rs.getString("telefono");
+                String especialidad = rs.getString("especialidad");
+                double salario = rs.getDouble("salario_por_hora");
+
+                Mecanico mecanico = new Mecanico(dni, nombre, apellido, telefono, especialidad, salario);
+
+                mecanicos.put(dni, mecanico);
+            }
+        }
+
+        return mecanicos;
+    }
+
+
+    // TRAER VEHICULOS
+    public static HashMap<String, Vehiculo> obtenerTodosLosVehiculos() throws SQLException, AccionInvalidaEx {
+
+        HashMap<String, Vehiculo> vehiculos = new HashMap<>();
+
+        String sql = "SELECT * FROM vehiculos";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String patente = rs.getString("patente");
+                double kilometraje = rs.getDouble("kilometraje");
+                int idModelo = rs.getInt("id_modelo");
+                String dniCliente = rs.getString("dni");
+
+                Modelo modelo = getModeloPorID(idModelo);
+                Cliente cliente = getClientePorDNI(dniCliente);
+
+                Vehiculo vehiculo = new Vehiculo(patente, kilometraje, cliente, modelo);
+
+                vehiculos.put(patente, vehiculo);
+            }
+        }
+
+        return vehiculos;
+    }
+
+
+    // TRAER REPUESTOS
+    public static HashMap<Integer, Repuesto> obtenerTodosLosRepuestos() throws SQLException, AccionInvalidaEx {
+
+        HashMap<Integer, Repuesto> repuestos = new HashMap<>();
+
+        String sql = "SELECT * FROM repuestos";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                int id = rs.getInt("id_repuesto");
+                String nombre = rs.getString("nombre");
+                double precio = rs.getDouble("precio");
+                int stock = rs.getInt("stock");
+
+                Repuesto repuesto = new Repuesto(id, nombre, precio, stock);
+
+                repuestos.put(id, repuesto);
+            }
+        }
+
+        return repuestos;
+    }
+
+
 }
