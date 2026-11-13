@@ -168,6 +168,50 @@ public class DBHandler {
         return filasAfectadas;
     }
 
+    //GUARDAR REPUESTO
+    public static int guardarRepuesto(String nombre, double precio, int stock){
+        int filasAfectadas = 0;
+
+        // Recordá que id_repuesto es AUTOINCREMENT, por lo que SQLite lo genera solo
+        String sqlAddRepuesto = "INSERT INTO repuestos(nombre, precio, stock) VALUES (?, ?, ?)";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlAddRepuesto)){
+
+            ps.setString(1, nombre);
+            ps.setDouble(2, precio);
+            ps.setInt(3, stock);
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //GUARDAR MODELO
+    public static int guardarModelo(String marca, String linea, int anio){
+        int filasAfectadas = 0;
+
+        // Al igual que repuestos, id_modelo es AUTOINCREMENT
+        String sqlAddModelo = "INSERT INTO modelos(marca, linea, anio) VALUES (?, ?, ?)";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlAddModelo)){
+
+            ps.setString(1, marca);
+            ps.setString(2, linea);
+            ps.setInt(3, anio);
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
     //GUARDAR ORDEN DE TRABAJO
     public static int guardarOrdenDeTrabajo(String descripcion, EstadoOrden estado, double horas_trabajadas, String patente, String dni_mecanico){
         int idAgregado = -1;
@@ -215,6 +259,70 @@ public class DBHandler {
             e.printStackTrace();
         }
         return false;
+    }
+
+    //ACTUALIZAR KILOMETRAJE DEL VEHiCULO
+    public static int actualizarKilometrajeVehiculo(String patente, double nuevoKilometraje){
+        int filasAfectadas = 0;
+
+        String sqlUpdateKm = "UPDATE vehiculos SET kilometraje = ? WHERE patente = ?";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlUpdateKm)){
+
+            ps.setDouble(1, nuevoKilometraje);
+            ps.setString(2, patente);
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //ACTUALIZAR DATOS DE CLIENTE
+    public static int actualizarDatosCliente(String dni, String nombre, String apellido, String telefono, String email){
+        int filasAfectadas = 0;
+
+        // Se actualizan todos los datos modificables usando el DNI como identificador
+        String sqlUpdateCliente = "UPDATE clientes SET nombre = ?, apellido = ?, telefono = ?, email = ? WHERE dni = ?";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlUpdateCliente)){
+
+            ps.setString(1, nombre);
+            ps.setString(2, apellido);
+            ps.setString(3, telefono);
+            ps.setString(4, email);
+            ps.setString(5, dni); // El WHERE
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //ACTUALIZAR SALARIO DE MECANICO
+    public static int actualizarSalarioMecanico(String dni, double nuevoSalario){
+        int filasAfectadas = 0;
+
+        String sqlUpdateSalario = "UPDATE mecanicos SET salario_por_hora = ? WHERE dni = ?";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlUpdateSalario)){
+
+            ps.setDouble(1, nuevoSalario);
+            ps.setString(2, dni);
+
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
     }
 
     //OBTENER REPUESTO POR ID
@@ -412,8 +520,60 @@ public class DBHandler {
 
         return buscado;
     }
-    
 
+    //ELIMINAR CLIENTE
+    public static int eliminarCliente(String dni){
+        int filasAfectadas = 0;
+
+        String sqlDeleteCliente = "DELETE FROM clientes WHERE dni = ?";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlDeleteCliente)){
+
+            ps.setString(1, dni);
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //ELIMINAR VEHICULO
+    public static int eliminarVehiculo(String patente){
+        int filasAfectadas = 0;
+
+        String sqlDeleteVehiculo = "DELETE FROM vehiculos WHERE patente = ?";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlDeleteVehiculo)){
+
+            ps.setString(1, patente);
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
+
+    //ELIMINAR MECANICO
+    public static int eliminarMecanico(String dni){
+        int filasAfectadas = 0;
+
+        String sqlDeleteMecanico = "DELETE FROM mecanicos WHERE dni = ?";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sqlDeleteMecanico)){
+
+            ps.setString(1, dni);
+            filasAfectadas = ps.executeUpdate();
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return filasAfectadas;
+    }
 
 
 }
