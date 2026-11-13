@@ -63,11 +63,11 @@ public class Vehiculo implements Iidentificable <String> {
         return this.patente;
     }
 
-    public void actualizarKilometraje(double nuevoKilometraje) {
+    public void actualizarKilometraje(double nuevoKilometraje)throws AccionInvalidaEx {
         if(nuevoKilometraje > this.kilometraje) {
             this.kilometraje = nuevoKilometraje;
         } else {
-            System.out.println("Error: El kilometraje no puede reducirse.");
+            throw new AccionInvalidaEx("el km nuevo es menor al actual");
         }
     }
 }

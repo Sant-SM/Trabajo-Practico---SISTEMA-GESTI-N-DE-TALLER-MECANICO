@@ -177,22 +177,24 @@ public class DBHandler {
 
     //GUARDAR REPUESTO
     public static int guardarRepuesto(String nombre, double precio, int stock) throws SQLException {
-
-        int filasAfectadas = 0;
-
+        int idAgregado = 0;
         String sqlAddRepuesto = "INSERT INTO repuestos(nombre, precio, stock) VALUES (?, ?, ?)";
 
         try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement ps = connection.prepareStatement(sqlAddRepuesto)) {
+             PreparedStatement ps = connection.prepareStatement(sqlAddRepuesto, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, nombre);
             ps.setDouble(2, precio);
             ps.setInt(3, stock);
+            ps.executeQuery();
 
-            filasAfectadas = ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                while (rs.next()) {
+                    idAgregado = rs.getInt(1);
+                }
+            }
         }
-
-        return filasAfectadas;
+        return idAgregado;
     }
 
     //GUARDAR MODELO

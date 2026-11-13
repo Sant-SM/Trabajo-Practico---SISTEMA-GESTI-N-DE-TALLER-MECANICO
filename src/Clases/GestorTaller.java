@@ -44,7 +44,7 @@ public class GestorTaller {
     public <T> String imprimirListado(ArrayList<T> lista) {
         String info = "\n --- Listado --- \n";
         for (T elemento : lista) {
-            info += lista.toString() + "\n";
+            info += elemento.toString() + "\n";
         }
         info += "-----------------------\n";
         return info;
@@ -266,6 +266,10 @@ public class GestorTaller {
     public String ingresarStock(int idRepuesto, int cantidadAgregada) throws AccionInvalidaEx, SQLException {
         if(!cacheRepuestos.existe(idRepuesto)){
             throw new AccionInvalidaEx("No existe repuesto con ese id");
+        }
+
+        if(cantidadAgregada <= 0 ){
+            throw new AccionInvalidaEx("Cantidad invalida");
         }
 
         Repuesto r = cacheRepuestos.obtener(idRepuesto);
