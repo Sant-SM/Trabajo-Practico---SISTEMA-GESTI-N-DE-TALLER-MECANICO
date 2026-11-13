@@ -110,7 +110,7 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         return this.idOrden;
     }
 
-    public void agregarRepuesto(Repuesto repuesto, int cantidad) /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+    public void agregarRepuesto(Repuesto repuesto, int cantidad) throws AccionInvalidaEx /*throws StockInsuficienteException, OrdenInvalidaException*/ {
         if (this.estadoOrden == EstadoOrden.FINALIZADA || this.estadoOrden == EstadoOrden.CANCELADA) {
             //throw new OrdenInvalidaException("No se pueden agregar repuestos a una orden cerrada.");
         }
@@ -146,6 +146,19 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         }
 
         return total;
+    }
+
+    @Override
+    public String toString() {
+        return "OrdenDeTrabajo{" +
+                "idOrden=" + idOrden +
+                ", descripcionProblema='" + descripcionProblema + '\'' +
+                ", horasTrabajadas=" + horasTrabajadas +
+                ", estadoOrden=" + estadoOrden +
+                ", detallesOrden=" + detallesOrden +
+                ", vehiculo=" + vehiculo +
+                ", mecanico=" + mecanico +
+                '}';
     }
 }
 
