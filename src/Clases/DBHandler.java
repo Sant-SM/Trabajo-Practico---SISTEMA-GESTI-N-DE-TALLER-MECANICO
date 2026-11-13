@@ -514,7 +514,7 @@ public class DBHandler {
 
                 }
             }
-        }catch (SQLException e){
+        }catch (SQLException | AccionInvalidaEx e){ //AccionInvalidaEx viene por getVehiculoPorPatente
             e.printStackTrace();
         }
 
