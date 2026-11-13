@@ -136,6 +136,56 @@ public class GestorTaller {
     }
 
 
+    //BUSCAR MECANICO POR DNI
+    public Mecanico buscarMecanicoPorDni(String dni) throws AccionInvalidaEx{
+        if(!cacheMecanicos.existe(dni)){
+            throw new AccionInvalidaEx("No existe mecanico con ese dni");
+        }
+
+        Mecanico mecanico = cacheMecanicos.obtener(dni);
+
+        return mecanico;
+    }
+
+    //MODIFICAR SALARIO DE MECANICO
+    public String modificarSalarioDeMecanico(String dni, double nuevoSalario) throws AccionInvalidaEx, SQLException {
+        if(!cacheMecanicos.existe(dni)){
+            throw new AccionInvalidaEx("No existe mecanico con ese dni");
+        }
+        Mecanico m = cacheMecanicos.obtener(dni);
+
+        int filasAfectadas = DBHandler.actualizarSalarioMecanico(dni, nuevoSalario);
+
+        if(filasAfectadas != 1){
+            throw new AccionInvalidaEx("No se pudo actualizar el salario");
+        }
+
+        m.setSalarioPorHora(nuevoSalario);
+
+        return "Salario Actualizado";
+    }
+
+    //ELIMINAR MECANICO
+    public String eliminarMecanico(String dni) throws AccionInvalidaEx, SQLException {
+        if(!cacheMecanicos.existe(dni)){
+            throw new AccionInvalidaEx("No existe mecanico con ese dni");
+        }
+
+        int filasAfectadas = DBHandler.eliminarMecanico(dni);
+
+        if(filasAfectadas != 1){
+            throw new AccionInvalidaEx("No se pudo eliminar al mecanico");
+        }
+
+        Mecanico m = cacheMecanicos.obtener(dni);
+
+        cacheMecanicos.eliminar(dni);
+
+        return "El mecanico " + m.getNombre() + " " + m.getApellido() + "con DNI: " + m.getDni() + " a sido eliminado del sistema";
+    }
+
+
+
     // ===============================================================================================================================/VEHICULOS/
 
     public String ingresarVehiculo(String patente, double kilometraje, Modelo modelo, Cliente propietario) throws AccionInvalidaEx, SQLException {
