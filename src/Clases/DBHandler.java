@@ -217,6 +217,9 @@ public class DBHandler {
         return filasAfectadas;
     }
 
+    //GUARDAR MODELO
+
+
     //GUARDAR ORDEN DE TRABAJO
     public static int guardarOrdenDeTrabajo(String descripcion, EstadoOrden estado, double horas_trabajadas, String patente, String dni_mecanico) throws SQLException {
 
@@ -696,6 +699,34 @@ public class DBHandler {
         }
 
         return repuestos;
+    }
+
+    public static HashMap<Integer, Modelo> obtenerTodosLosModelos() throws  SQLException{
+
+        HashMap<Integer, Modelo> modelos = new HashMap<>();
+
+        String sql = "SELECT * FROM modelos";
+
+        try(Connection connection = DriverManager.getConnection(url);
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
+
+            while(rs.next()){
+                int id = rs.getInt("id_modelo");
+                String marca = rs.getString("marca");
+                String linea = rs.getString("linea");
+                int anio = rs.getInt("anio");
+
+                Modelo nuevo = new Modelo(id, marca, linea, anio);
+
+                modelos.put(id, nuevo);
+
+            }
+
+
+        }
+        return modelos;
+
     }
 
 

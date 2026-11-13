@@ -17,6 +17,7 @@ public class GestorTaller {
     private CacheMemoria<String, Mecanico> cacheMecanicos;
     private CacheMemoria<String, Vehiculo> cacheVehiculos;
     private CacheMemoria<Integer, Repuesto> cacheRepuestos;
+    private CacheMemoria<Integer, Modelo> cacheModelo;
 
     // CLIENTES, MECANICOS, VEHICULOS, REPUESTOS REQUIEREN CLASE GENERICA
 
@@ -35,6 +36,9 @@ public class GestorTaller {
 
         this.cacheRepuestos = new CacheMemoria<>();
         this.cacheRepuestos.cargarTodos(DBHandler.obtenerTodosLosRepuestos());
+
+        this.cacheModelo = new CacheMemoria<>();
+        this.cacheModelo.cargarTodos(DBHandler.obtenerTodosLosModelos());
     }
 
 
@@ -234,6 +238,23 @@ public class GestorTaller {
         return "Actualizacion Exitosa";
     }
 
+    // ===============================================================================================================================/MODELOS
+
+    public String ingresarModelo(String marca, String linea, int anio) throws AccionInvalidaEx, SQLException {
+        Modelo nuevo = new Modelo(marca, linea, anio);
+
+        int idAgregado = DBHandler.guardarModelo(marca, linea, anio);
+
+        if(idAgregado == -1){
+            throw new AccionInvalidaEx("No se pudo guardar en la base de datos");
+        }
+
+
+        cacheModelo.agregar(idAgregado, nuevo);
+
+        return "Se pudo";
+
+    }
 
     // ===============================================================================================================================/REPUESTOS E INVENTARIO/
 
