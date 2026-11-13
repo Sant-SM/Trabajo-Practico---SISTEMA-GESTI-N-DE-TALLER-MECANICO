@@ -2,6 +2,8 @@ import Clases.DBHandler;
 import Clases.GestorTaller;
 import Clases.OrdenDeTrabajo;
 import Exepciones.AccionInvalidaEx;
+import Exepciones.OrdenInvalidaException;
+import Exepciones.StockInsuficienteException;
 
 import java.sql.SQLException;
 import java.util.Scanner;
@@ -55,9 +57,14 @@ public class Main {
 
             try {
                 opcion = Integer.parseInt(teclado.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Por favor, ingrese un numero valido para la opcion.");
+                continue;
+            }
 
-                switch (opcion) {
-                    case 1: {
+            switch (opcion) {
+                case 1: {
+                    try {
                         System.out.print("DNI: ");
                         String dni = teclado.nextLine();
                         System.out.print("Nombre: ");
@@ -69,27 +76,43 @@ public class Main {
                         System.out.print("Email: ");
                         String email = teclado.nextLine();
                         System.out.println(gestor.registrarNuevoCliente(dni, nombre, apellido, telefono, email));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al registrar: " + ex.getMessage());
                     }
-                    case 2: {
+                    break;
+                }
+                case 2: {
+                    try {
                         System.out.print("DNI del cliente: ");
                         System.out.println(gestor.buscarClientePorDni(teclado.nextLine()));
-                        break;
+                    } catch (AccionInvalidaEx ex) {
+                        System.out.println("Error en la busqueda: " + ex.getMessage());
                     }
-                    case 3: {
+                    break;
+                }
+                case 3: {
+                    try {
                         System.out.print("DNI del cliente: ");
                         String dni = teclado.nextLine();
                         System.out.print("Nuevo telefono: ");
                         String telefono = teclado.nextLine();
                         System.out.println(gestor.modificarTelefonoCliente(dni, telefono));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al modificar: " + ex.getMessage());
                     }
-                    case 4: {
+                    break;
+                }
+                case 4: {
+                    try {
                         System.out.print("DNI del cliente: ");
                         System.out.println(gestor.eliminarCliente(teclado.nextLine()));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al eliminar: " + ex.getMessage());
                     }
-                    case 5: {
+                    break;
+                }
+                case 5: {
+                    try {
                         System.out.print("DNI: ");
                         String dni = teclado.nextLine();
                         System.out.print("Nombre: ");
@@ -102,29 +125,48 @@ public class Main {
                         String especialidad = teclado.nextLine();
                         System.out.print("Salario por hora: ");
                         double salario = Double.parseDouble(teclado.nextLine().replace(',', '.'));
-                        System.out.println(gestor.registrarNuevoMecanico(dni, nombre, apellido,
-                                telefono, especialidad, salario));
-                        break;
+                        System.out.println(gestor.registrarNuevoMecanico(dni, nombre, apellido, telefono, especialidad, salario));
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al registrar: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: El salario debe ser un numero.");
                     }
-                    case 6: {
+                    break;
+                }
+                case 6: {
+                    try {
                         System.out.print("DNI del mecanico: ");
                         System.out.println(gestor.buscarMecanicoPorDni(teclado.nextLine()));
-                        break;
+                    } catch (AccionInvalidaEx ex) {
+                        System.out.println("Error en la busqueda: " + ex.getMessage());
                     }
-                    case 7: {
+                    break;
+                }
+                case 7: {
+                    try {
                         System.out.print("DNI del mecanico: ");
                         String dni = teclado.nextLine();
                         System.out.print("Nuevo salario por hora: ");
                         double salario = Double.parseDouble(teclado.nextLine().replace(',', '.'));
                         System.out.println(gestor.modificarSalarioDeMecanico(dni, salario));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al modificar: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: El salario debe ser un numero.");
                     }
-                    case 8: {
+                    break;
+                }
+                case 8: {
+                    try {
                         System.out.print("DNI del mecanico: ");
                         System.out.println(gestor.eliminarMecanico(teclado.nextLine()));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al eliminar: " + ex.getMessage());
                     }
-                    case 9: {
+                    break;
+                }
+                case 9: {
+                    try {
                         System.out.print("Marca: ");
                         String marca = teclado.nextLine();
                         System.out.print("Linea: ");
@@ -132,12 +174,22 @@ public class Main {
                         System.out.print("Anio: ");
                         int anio = Integer.parseInt(teclado.nextLine());
                         System.out.println(gestor.ingresarModelo(marca, linea, anio));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al registrar: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: El anio debe ser un numero.");
                     }
-                    case 10:
+                    break;
+                }
+                case 10:
+                    try {
                         System.out.println(gestor.imprimirListado(gestor.obtenerModelos()));
-                        break;
-                    case 11: {
+                    } catch (SQLException ex) {
+                        System.out.println("Error al listar modelos: " + ex.getMessage());
+                    }
+                    break;
+                case 11: {
+                    try {
                         System.out.print("Patente: ");
                         String patente = teclado.nextLine();
                         System.out.print("Kilometraje: ");
@@ -146,30 +198,51 @@ public class Main {
                         int idModelo = Integer.parseInt(teclado.nextLine());
                         System.out.print("DNI del propietario: ");
                         String dniPropietario = teclado.nextLine();
+
                         System.out.println(gestor.ingresarVehiculo(patente, kilometraje,
                                 gestor.buscarModeloPorId(idModelo),
                                 gestor.buscarClientePorDni(dniPropietario)));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al registrar vehiculo: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: Ingrese formatos numericos validos para kilometraje e ID.");
                     }
-                    case 12: {
+                    break;
+                }
+                case 12: {
+                    try {
                         System.out.print("Patente: ");
                         System.out.println(gestor.buscarVehiculoPorPatente(teclado.nextLine()));
-                        break;
+                    } catch (AccionInvalidaEx ex) {
+                        System.out.println("Error en la busqueda: " + ex.getMessage());
                     }
-                    case 13: {
+                    break;
+                }
+                case 13: {
+                    try {
                         System.out.print("Patente: ");
                         String patente = teclado.nextLine();
                         System.out.print("Nuevo kilometraje: ");
                         double kilometraje = Double.parseDouble(teclado.nextLine().replace(',', '.'));
                         System.out.println(gestor.actualizarKilometraje(patente, kilometraje));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al actualizar: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: El kilometraje debe ser un numero.");
                     }
-                    case 14: {
+                    break;
+                }
+                case 14: {
+                    try {
                         System.out.print("Patente: ");
                         System.out.println(gestor.eliminarVehiculo(teclado.nextLine()));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al eliminar: " + ex.getMessage());
                     }
-                    case 15: {
+                    break;
+                }
+                case 15: {
+                    try {
                         System.out.print("Nombre del repuesto: ");
                         String nombre = teclado.nextLine();
                         System.out.print("Precio: ");
@@ -177,22 +250,40 @@ public class Main {
                         System.out.print("Stock inicial: ");
                         int stock = Integer.parseInt(teclado.nextLine());
                         System.out.println(gestor.ingresarRepuesto(nombre, precio, stock));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al registrar: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: El precio y stock deben ser numericos.");
                     }
-                    case 16: {
+                    break;
+                }
+                case 16: {
+                    try {
                         System.out.print("ID del repuesto: ");
                         System.out.println(gestor.obtenerRepuestoPorID(Integer.parseInt(teclado.nextLine())));
-                        break;
+                    } catch (AccionInvalidaEx ex) {
+                        System.out.println("Error en la busqueda: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: El ID debe ser numerico.");
                     }
-                    case 17: {
+                    break;
+                }
+                case 17: {
+                    try {
                         System.out.print("ID del repuesto: ");
                         int idRepuesto = Integer.parseInt(teclado.nextLine());
                         System.out.print("Cantidad a ingresar: ");
                         int cantidad = Integer.parseInt(teclado.nextLine());
                         System.out.println(gestor.ingresarStock(idRepuesto, cantidad));
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al ingresar stock: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: ID y cantidad deben ser numericos.");
                     }
-                    case 18: {
+                    break;
+                }
+                case 18: {
+                    try {
                         System.out.print("Numero de orden: ");
                         int idOrden = Integer.parseInt(teclado.nextLine());
                         System.out.print("Patente del vehiculo: ");
@@ -207,20 +298,34 @@ public class Main {
                         double horas = Double.parseDouble(teclado.nextLine().replace(',', '.'));
                         System.out.print("Descripcion del problema: ");
                         String descripcion = teclado.nextLine();
+
                         System.out.println(gestor.registrarYFacturarReparacion(idOrden,
                                 gestor.buscarVehiculoPorPatente(patente),
                                 gestor.buscarMecanicoPorDni(dniMecanico),
                                 idRepuesto, cantidad, horas, descripcion));
-                        break;
+
+                    } catch (AccionInvalidaEx | SQLException | OrdenInvalidaException | StockInsuficienteException ex) {
+                        System.out.println("Error en el registro de la reparacion: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: Los IDs, cantidades y horas deben ser valores numericos.");
                     }
-                    case 19: {
+                    break;
+                }
+                case 19: {
+                    try {
                         System.out.print("Numero de orden: ");
                         OrdenDeTrabajo orden = gestor.buscarOrdenPorId(Integer.parseInt(teclado.nextLine()));
                         System.out.println(orden);
                         System.out.println("Total: $" + orden.calcularTotal());
-                        break;
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al buscar la orden: " + ex.getMessage());
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Error: El ID debe ser numerico.");
                     }
-                    case 20:
+                    break;
+                }
+                case 20:
+                    try {
                         System.out.println("CLIENTES");
                         System.out.println(gestor.imprimirListado(gestor.obtenerClientes()));
                         System.out.println("MECANICOS");
@@ -231,18 +336,17 @@ public class Main {
                         System.out.println(gestor.imprimirListado(gestor.obtenerVehiculos()));
                         System.out.println("REPUESTOS");
                         System.out.println(gestor.imprimirListado(gestor.obtenerRepuestos()));
-                        break;
-                    case 0:
-                        System.out.println("Cerrando el sistema...");
-                        break;
-                    default:
-                        System.out.println("Opcion invalida.");
-                }
-            } catch (Exception ex) {
-                System.out.println("No se pudo realizar la operacion: " + ex.getMessage());
+                    } catch (AccionInvalidaEx | SQLException ex) {
+                        System.out.println("Error al mostrar listados: " + ex.getMessage());
+                    }
+                    break;
+                case 0:
+                    System.out.println("Cerrando el sistema...");
+                    break;
+                default:
+                    System.out.println("Opcion invalida.");
             }
         }
-
         teclado.close();
     }
 }
