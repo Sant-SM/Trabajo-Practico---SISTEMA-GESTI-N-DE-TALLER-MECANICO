@@ -52,5 +52,13 @@ public class Modelo {
     }
 
 
-
+    @Override
+    public String toString() {
+        return "Modelo{" +
+                "id=" + id +
+                ", marca='" + marca + '\'' +
+                ", linea='" + linea + '\'' +
+                ", anio=" + anio +
+                '}';
+    }
 }

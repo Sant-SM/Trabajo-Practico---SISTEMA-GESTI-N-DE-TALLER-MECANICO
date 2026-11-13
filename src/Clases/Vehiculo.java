@@ -70,5 +70,15 @@ public class Vehiculo implements Iidentificable <String> {
             throw new AccionInvalidaEx("el km nuevo es menor al actual");
         }
     }
+
+    @Override
+    public String toString() {
+        return "Vehiculo{" +
+                "patente='" + patente + '\'' +
+                ", kilometraje=" + kilometraje +
+                ", propietario=" + propietario +
+                ", modelo=" + modelo +
+                '}';
+    }
 }
 
