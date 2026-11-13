@@ -1,3 +1,4 @@
+
 package Clases;
 
 import Enums.EstadoOrden;
@@ -8,9 +9,8 @@ import Interfaces.Ifacturable;
 import Interfaces.Iidentificable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
+public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
 
     private int idOrden;
     private String descripcionProblema;
@@ -33,7 +33,6 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
             throw new AccionInvalidaEx("Mecanico invalido");
         }
 
-
         this.idOrden = idOrden;
         this.descripcionProblema = descripcionProblema;
         this.horasTrabajadas = 0;
@@ -48,6 +47,7 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         this.descripcionProblema = descripcionProblema;
         this.horasTrabajadas = horasTrabajadas;
         this.estadoOrden = estadoOrden;
+        this.detallesOrden = new ArrayList<>();
         this.vehiculo = vehiculo;
         this.mecanico = mecanico;
     }
@@ -113,13 +113,9 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         return this.idOrden;
     }
 
-<<<<<<< HEAD
-    public void agregarRepuesto(Repuesto repuesto, int cantidad) throws AccionInvalidaEx ,StockInsuficienteException, OrdenInvalidaException {
-
-=======
     public void agregarRepuesto(Repuesto repuesto, int cantidad)
             throws OrdenInvalidaException, StockInsuficienteException, AccionInvalidaEx {
->>>>>>> 6a96a433dec54bdb7240beada7cae978fbd61243
+
         if (this.estadoOrden == EstadoOrden.FINALIZADA || this.estadoOrden == EstadoOrden.CANCELADA) {
             throw new OrdenInvalidaException("No se pueden agregar repuestos a una orden cerrada.");
         }
@@ -135,10 +131,11 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
         }
     }
 
-    public void finalizarOrden(double horasTotales) throws OrdenInvalidaException{
+    public void finalizarOrden(double horasTotales) throws OrdenInvalidaException {
         if (this.estadoOrden != EstadoOrden.EN_PROCESO) {
-            throw new OrdenInvalidaException("Solo se pueden finalizar órdenes En Proceso.");
+            throw new OrdenInvalidaException("Solo se pueden finalizar ordenes En Proceso.");
         }
+
         this.horasTrabajadas = horasTotales;
         this.estadoOrden = EstadoOrden.FINALIZADA;
     }
@@ -147,9 +144,8 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
     public double calcularTotal() {
         double total = 0;
 
-        total += (this.mecanico.getSalarioPorHora() * this.horasTrabajadas);
+        total += this.mecanico.getSalarioPorHora() * this.horasTrabajadas;
 
-        // Suma el subtotal de repuestos
         for (DetalleOrden detalle : this.detallesOrden) {
             total += detalle.calcularSubtotal();
         }
@@ -169,6 +165,6 @@ public class OrdenDeTrabajo implements Iidentificable <Integer>, Ifacturable {
                 ", mecanico=" + mecanico +
                 '}';
     }
-
 }
+
 
