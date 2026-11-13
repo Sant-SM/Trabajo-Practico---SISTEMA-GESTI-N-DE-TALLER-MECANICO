@@ -147,7 +147,7 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
         total += this.mecanico.getSalarioPorHora() * this.horasTrabajadas;
 
         for (DetalleOrden detalle : this.detallesOrden) {
-            total += detalle.calcularSubtotal();
+            total += detalle.calcularTotal();
         }
 
         return total;
