@@ -123,7 +123,7 @@ public class Main {
                         String linea = teclado.nextLine();
                         System.out.print("Anio: ");
                         int anio = Integer.parseInt(teclado.nextLine());
-                        System.out.println(gestor.(marca, linea, anio));
+                        System.out.println(gestor.ingresarModelo(marca, linea, anio));
                         break;
                     }
                     case 10:

@@ -220,6 +220,23 @@ public class GestorTaller {
         return vehiculo;
     }
 
+    public String eliminarVehiculo(String patente) throws AccionInvalidaEx, SQLException {
+        if(!cacheVehiculos.existe(patente)){
+            throw new AccionInvalidaEx("No existe vehiculo con esa patente");
+        }
+
+        int filasAfectadas = DBHandler.eliminarVehiculo(patente);
+
+        if(filasAfectadas != 1){
+            throw new AccionInvalidaEx("No se pudo eliminar el vehiculo");
+        }
+
+        Vehiculo v = cacheVehiculos.obtener(patente);
+        cacheVehiculos.eliminar(patente);
+
+        return "El vehiculo con patente " + v.getPatente() + " ha sido eliminado del sistema";
+    }
+
     public String actualizarKilometraje(String patente, double nuevoKilometros) throws AccionInvalidaEx, SQLException {
         if(!cacheVehiculos.existe(patente)){
             throw new AccionInvalidaEx("No existe vehiculo con esa patente");
@@ -254,6 +271,14 @@ public class GestorTaller {
 
         return "Se pudo";
 
+    }
+
+    public Modelo buscarModeloPorId(int idModelo) throws AccionInvalidaEx {
+        if(!cacheModelo.existe(idModelo)){
+            throw new AccionInvalidaEx("No existe modelo con ese id");
+        }
+
+        return cacheModelo.obtener(idModelo);
     }
 
     // ===============================================================================================================================/REPUESTOS E INVENTARIO/
@@ -353,6 +378,38 @@ public class GestorTaller {
         return ticket.toString();
     }
 
+    public OrdenDeTrabajo buscarOrdenPorId(int idOrden) throws AccionInvalidaEx, SQLException {
+        OrdenDeTrabajo orden = DBHandler.getOrdenDeTrabajoPorID(idOrden);
+
+        if(orden == null){
+            throw new AccionInvalidaEx("No existe orden con ese id");
+        }
+
+        return orden;
+    }
+
+    // ===============================================================================================================================/OBTENER LISTADOS/
+
+
+    public ArrayList<Cliente> obtenerClientes() throws SQLException, AccionInvalidaEx {
+        return new ArrayList<>(DBHandler.obtenerTodosLosClientes().values());
+    }
+
+    public ArrayList<Mecanico> obtenerMecanicos() throws SQLException, AccionInvalidaEx {
+        return new ArrayList<>(DBHandler.obtenerTodosLosMecanicos().values());
+    }
+
+    public ArrayList<Modelo> obtenerModelos() throws SQLException {
+        return new ArrayList<>(DBHandler.obtenerTodosLosModelos().values());
+    }
+
+    public ArrayList<Vehiculo> obtenerVehiculos() throws SQLException, AccionInvalidaEx {
+        return new ArrayList<>(DBHandler.obtenerTodosLosVehiculos().values());
+    }
+
+    public ArrayList<Repuesto> obtenerRepuestos() throws SQLException, AccionInvalidaEx {
+        return new ArrayList<>(DBHandler.obtenerTodosLosRepuestos().values());
+    }
 
 
 }
