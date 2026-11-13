@@ -51,6 +51,7 @@ public class GestorTaller {
 
     // ===============================================================================================================================/CLIENTES/
 
+    //REGISTRAR UN NUEVO CLIENTE
     public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) throws AccionInvalidaEx, SQLException {
         Cliente nuevoCliente = new Cliente(dni, nombre, apellido, telefono, email);
 
@@ -65,6 +66,55 @@ public class GestorTaller {
         cacheClientes.agregar(dni, nuevoCliente);
 
         return "EXITO: Cliente '" + nombre + "' (" + email + ") dado de alta.";
+    }
+
+
+    //BUSCAR CLIENTE POR DNI
+    public Cliente buscarClientePorDni(String dni) throws AccionInvalidaEx{
+        if(!cacheClientes.existe(dni)){
+            throw new AccionInvalidaEx("No existe cliente con ese dni");
+        }
+
+        Cliente cliente = cacheClientes.obtener(dni);
+
+        return cliente;
+    }
+
+    //MODIFICAR TELEFONO DE CLIENTE
+    public String modificarTelefonoCliente(String dni, String nuevoTelefono) throws AccionInvalidaEx, SQLException {
+        if(!cacheClientes.existe(dni)){
+            throw new AccionInvalidaEx("No existe cliente con ese dni");
+        }
+        Cliente c = cacheClientes.obtener(dni);
+
+        int filasAfectadas = DBHandler.actualizarDatosCliente(c.getDni(), c.getNombre(), c.getApellido(), nuevoTelefono, c.getEmail());
+
+        if(filasAfectadas != 1){
+            throw new AccionInvalidaEx("No se pudo actualizar el telefono");
+        }
+
+        c.setTelefono(nuevoTelefono);
+
+        return "Telefono Actualizado";
+    }
+
+    //ELIMINAR CLIENTE
+    public String eliminarCliente(String dni) throws AccionInvalidaEx, SQLException {
+        if(!cacheClientes.existe(dni)){
+            throw new AccionInvalidaEx("No existe cliente con ese dni");
+        }
+
+        int filasAfectadas = DBHandler.eliminarCliente(dni);
+
+        if(filasAfectadas != 1){
+            throw new AccionInvalidaEx("No se pudo eliminar el cliente");
+        }
+
+        Cliente c = cacheClientes.obtener(dni);
+
+        cacheClientes.eliminar(dni);
+
+        return "El cliente " + c.getNombre() + " " + c.getApellido() + "con DNI: " + c.getDni() + " a sido eliminado del sistema";
     }
 
 
