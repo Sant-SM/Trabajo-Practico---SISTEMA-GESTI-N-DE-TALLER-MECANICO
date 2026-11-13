@@ -7,25 +7,29 @@ import java.util.ArrayList;
 public class GestorTaller {
 
     private DBHandler db;
+    //CLIENTES, MECANICOS, VEHICULOS, REPUESTOS REQUIEREN CLASE GENERICA
 
     public GestorTaller() {
         this.db = new DBHandler();
         this.db.conectar(); // todo... CONECTAR es un metodo INNECESARIO si las conecciones duran lo que dura la instancia del metodo... Considerarlo
     }
 
+
     // ===============================================================================================================================/IMPRIMIR/
 
     // Este es el metodo genererico
-    public <T> String imprimirListado (ArrayList<T> lista){
+    public <T> String imprimirListado(ArrayList<T> lista) {
         String info = "\n --- Listado --- \n";
-        for(T elemento : lista){
+        for (T elemento : lista) {
             info += lista.toString() + "\n";
         }
         info += "-----------------------\n";
         return info;
     }
 
-    // ===============================================================================================================================/REGISTROS/
+
+    // ===============================================================================================================================/CLIENTES/
+
 
     public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) throws AccionInvalidaEx {
         Cliente nuevoCliente = new Cliente(dni, nombre, apellido, telefono, email);
@@ -33,19 +37,27 @@ public class GestorTaller {
         return "EXITO: Cliente '" + nombre + " " + apellido + "' registrado correctamente en el sistema.";
     }
 
+    // ===============================================================================================================================/MECANICOS/
+
     public String registrarNuevoMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salario) throws AccionInvalidaEx {
         Mecanico nuevoMecanico = new Mecanico(dni, nombre, apellido, telefono, especialidad, salario);
         // db.guardarMecanico(nuevoMecanico);
         return "EXITO: Mecánico '" + nombre + "' (" + especialidad + ") dado de alta.";
     }
 
-    public String ingresarVehiculoAlTaller(String patente, double kilometraje, Modelo modelo, Cliente propietario) throws AccionInvalidaEx {
+
+    // ===============================================================================================================================/VEHICULOS/
+
+    public String ingresarVehiculo(String patente, double kilometraje, Modelo modelo, Cliente propietario) throws AccionInvalidaEx {
         Vehiculo nuevoVehiculo = new Vehiculo(patente, kilometraje, propietario, modelo);
         // db.guardarVehiculo(nuevoVehiculo);
         return "EXITO: Vehículo patente [" + patente + "] ingreso al taller a nombre de " + propietario.getNombre() + ".";
     }
 
-    // ===============================================================================================================================/TRANSACCIONES/
+    // ===============================================================================================================================/REPUESTOS E INVENTARIO/
+
+
+    // ===============================================================================================================================/ORDENES/
 
     public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) throws AccionInvalidaEx /*throws StockInsuficienteException, OrdenInvalidaException*/ {
 
@@ -88,14 +100,5 @@ public class GestorTaller {
 
         return ticket.toString();
     }
-
-    // ===============================================================================================================================/CERRAR CONECCION/
-
-    // Por ahora es innecesario
-
-//    public String cerrarSistema() {
-//        //db.desconectar();
-//        return "Sistema cerrado. Conexión a SQLite finalizada.";
-//    }
 
 }
