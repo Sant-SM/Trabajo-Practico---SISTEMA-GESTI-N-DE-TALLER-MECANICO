@@ -1,8 +1,9 @@
 package Clases;
 
 import Exepciones.AccionInvalidaEx;
+import Interfaces.Ifacturable;
 
-public class DetalleOrden {
+public class DetalleOrden implements Ifacturable {
 
     private Repuesto repuesto;
     private int cantidad;
@@ -37,8 +38,8 @@ public class DetalleOrden {
         return repuesto.getIdRepuesto();
     }
 
-    public double calcularSubtotal(){
+    @Override
+    public double calcularTotal() {
         return this.repuesto.getPrecio() * this.cantidad;
     }
-
 }
