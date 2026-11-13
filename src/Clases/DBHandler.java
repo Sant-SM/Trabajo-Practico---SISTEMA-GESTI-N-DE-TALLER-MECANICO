@@ -1,3 +1,4 @@
+
 package Clases;
 
 import Enums.EstadoOrden;
@@ -7,82 +8,80 @@ import java.sql.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class DBHandler {
+
     private final static String url = "jdbc:sqlite:taller_mecanico.db";
 
-    public static boolean conectar() {
-        try(Connection connection = DriverManager.getConnection(url)){
+    public static boolean conectar() throws SQLException {
+        try (Connection connection = DriverManager.getConnection(url)) {
             return true;
-        }catch (SQLException e){
-            e.printStackTrace();
         }
-        return false;
     }
 
     //METODO PARA CREAR LAS TABLAS
-    public static boolean crearTablas(){
+    public static boolean crearTablas() throws SQLException {
 
         //Tabla Clientes
         String sqlTablaClientes = "CREATE TABLE clientes (" +
-                                    "dni VARCHAR(10) PRIMARY KEY NOT NULL," +
-                                    "nombre VARCHAR(50) NOT NULL," +
-                                    "apellido VARCHAR(70) NOT NULL," +
-                                    "telefono VARCHAR(18) UNIQUE NOT NULL," +
-                                    "email VARCHAR(80) UNIQUE NOT NULL);";
+                "dni VARCHAR(10) PRIMARY KEY NOT NULL," +
+                "nombre VARCHAR(50) NOT NULL," +
+                "apellido VARCHAR(70) NOT NULL," +
+                "telefono VARCHAR(18) UNIQUE NOT NULL," +
+                "email VARCHAR(80) UNIQUE NOT NULL);";
 
         //Tabla Modelos
         String sqlTablaModelo = "CREATE TABLE modelos (" +
-                                    "id_modelo INTEGER PRIMARY KEY AUTOINCREMENT," +
-                                    "marca VARCHAR(80) NOT NULL," +
-                                    "linea VARCHAR(80) NOT NULL," +
-                                    "anio INTEGER NOT NULL CHECK(anio > 0));";
+                "id_modelo INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "marca VARCHAR(80) NOT NULL," +
+                "linea VARCHAR(80) NOT NULL," +
+                "anio INTEGER NOT NULL CHECK(anio > 0));";
 
         //Tabla Vehiculos
         String sqlTablaVehiculos = "CREATE TABLE vehiculos (" +
-                                    "patente VARCHAR(7) PRIMARY KEY NOT NULL," +
-                                    "kilometraje DECIMAL(10, 2) NOT NULL CHECK(kilometraje >= 0)," +
-                                    "id_modelo INTEGER NOT NULL," +
-                                    "dni VARCHAR(10) NOT NULL," +
-                                    "FOREIGN KEY (id_modelo) REFERENCES modelos(id_modelo)," +
-                                    "FOREIGN KEY (dni) REFERENCES clientes(dni));";
+                "patente VARCHAR(7) PRIMARY KEY NOT NULL," +
+                "kilometraje DECIMAL(10, 2) NOT NULL CHECK(kilometraje >= 0)," +
+                "id_modelo INTEGER NOT NULL," +
+                "dni VARCHAR(10) NOT NULL," +
+                "FOREIGN KEY (id_modelo) REFERENCES modelos(id_modelo)," +
+                "FOREIGN KEY (dni) REFERENCES clientes(dni));";
 
         //Tabla Mecanicos
         String sqlTablaMecanicos = "CREATE TABLE mecanicos (" +
-                                        "dni VARCHAR(10) PRIMARY KEY NOT NULL, " +
-                                        "nombre VARCHAR(50) NOT NULL," +
-                                        "apellido VARCHAR(70) NOT NULL," +
-                                        "telefono VARCHAR(18) UNIQUE NOT NULL," +
-                                        "especialidad VARCHAR(80) NOT NULL," +
-                                        "salario_por_hora DECIMAL(10, 2) NOT NULL CHECK(salario_por_hora >= 0));";
+                "dni VARCHAR(10) PRIMARY KEY NOT NULL, " +
+                "nombre VARCHAR(50) NOT NULL," +
+                "apellido VARCHAR(70) NOT NULL," +
+                "telefono VARCHAR(18) UNIQUE NOT NULL," +
+                "especialidad VARCHAR(80) NOT NULL," +
+                "salario_por_hora DECIMAL(10, 2) NOT NULL CHECK(salario_por_hora >= 0));";
 
         //Tabla Ordenes de Trabajo
         String sqlTablaOrdenesTrabajo = "CREATE TABLE ordenes_trabajo (" +
-                                            "id_orden INTEGER PRIMARY KEY AUTOINCREMENT," +
-                                            "descripcion TEXT NOT NULL," +
-                                            "estado TEXT NOT NULL CHECK(estado IN('PENDIENTE', 'EN_PROCESO', 'FINALIZADA', 'CANCELADA'))," +
-                                            "horas_trabajadas DECIMAL(10, 2) NOT NULL CHECK(horas_trabajadas >= 0)," +
-                                            "patente VARCHAR(7) NOT NULL," +
-                                            "dni_mecanico VARCHAR(10) NOT NULL," +
-                                            "FOREIGN KEY (patente) REFERENCES vehiculos(patente)," +
-                                            "FOREIGN KEY (dni_mecanico) REFERENCES mecanicos(dni));";
+                "id_orden INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "descripcion TEXT NOT NULL," +
+                "estado TEXT NOT NULL CHECK(estado IN('PENDIENTE', 'EN_PROCESO', 'FINALIZADA', 'CANCELADA'))," +
+                "horas_trabajadas DECIMAL(10, 2) NOT NULL CHECK(horas_trabajadas >= 0)," +
+                "patente VARCHAR(7) NOT NULL," +
+                "dni_mecanico VARCHAR(10) NOT NULL," +
+                "FOREIGN KEY (patente) REFERENCES vehiculos(patente)," +
+                "FOREIGN KEY (dni_mecanico) REFERENCES mecanicos(dni));";
 
         //Tabla Repuestos
         String sqlTablaRepuestos = "CREATE TABLE repuestos (" +
-                                        "id_repuesto INTEGER PRIMARY KEY  AUTOINCREMENT," +
-                                        "nombre VARCHAR(100) NOT NULL," +
-                                        "precio DECIMAL(10, 2) NOT NULL CHECK(precio >= 0)," +
-                                        "stock INTEGER NOT NULL CHECK(stock >= 0));";
+                "id_repuesto INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "nombre VARCHAR(100) NOT NULL," +
+                "precio DECIMAL(10, 2) NOT NULL CHECK(precio >= 0)," +
+                "stock INTEGER NOT NULL CHECK(stock >= 0));";
 
         //Tabla detalle Ordenes
         String sqlTablaDetalleOrdenes = "CREATE TABLE detalles_orden (" +
-                                            "id_orden INTEGER NOT NULL," +
-                                            "id_repuesto INTEGER NOT NULL," +
-                                            "cantidad INTEGER NOT NULL CHECK(cantidad >= 0)," +
-                                            "PRIMARY KEY (id_orden, id_repuesto),"+
-                                            "FOREIGN KEY (id_orden) REFERENCES ordenes_trabajo(id_orden)," +
-                                            "FOREIGN KEY (id_repuesto) REFERENCES repuestos(id_repuesto));";
+                "id_orden INTEGER NOT NULL," +
+                "id_repuesto INTEGER NOT NULL," +
+                "cantidad INTEGER NOT NULL CHECK(cantidad >= 0)," +
+                "PRIMARY KEY (id_orden, id_repuesto)," +
+                "FOREIGN KEY (id_orden) REFERENCES ordenes_trabajo(id_orden)," +
+                "FOREIGN KEY (id_repuesto) REFERENCES repuestos(id_repuesto));";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            Statement ps = connection.createStatement()) {
+        try (Connection connection = DriverManager.getConnection(url);
+             Statement ps = connection.createStatement()) {
 
             ps.execute("PRAGMA foreign_keys = ON;");
             ps.execute(sqlTablaClientes);
@@ -92,21 +91,20 @@ public class DBHandler {
             ps.execute(sqlTablaOrdenesTrabajo);
             ps.execute(sqlTablaRepuestos);
             ps.execute(sqlTablaDetalleOrdenes);
+
             return true;
-        }catch (SQLException e){
-            e.printStackTrace();
         }
-        return false;
     }
 
     //GUARDAR CLIENTE
-    public static int guardarCliente(String dni, String nombre, String apellido, String telefono, String email){
+    public static int guardarCliente(String dni, String nombre, String apellido, String telefono, String email) throws SQLException, AccionInvalidaEx {
+
         int filasAfectadas = 0;
 
         String sqlAddCliente = "INSERT INTO clientes(dni, nombre, apellido, telefono, email) VALUES (?, ?, ?, ?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlAddCliente)){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlAddCliente)) {
 
             ps.setString(1, dni);
             ps.setString(2, nombre);
@@ -115,21 +113,24 @@ public class DBHandler {
             ps.setString(5, email);
 
             filasAfectadas = ps.executeUpdate();
-
-        }catch (SQLException e){
-            e.printStackTrace();
         }
+
+        if(filasAfectadas <= 0){
+            throw new AccionInvalidaEx("No se encontro el cliente");
+        }
+
         return filasAfectadas;
     }
 
     //GUARDAR MECANICO
-    public static int guardarMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salarioXhora){
+    public static int guardarMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salarioXhora) throws SQLException,AccionInvalidaEx {
+
         int filasAfectadas = 0;
 
         String sqlAddMecanico = "INSERT INTO mecanicos(dni, nombre, apellido, telefono, especialidad, salario_por_hora) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlAddMecanico)){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlAddMecanico)) {
 
             ps.setString(1, dni);
             ps.setString(2, nombre);
@@ -139,21 +140,24 @@ public class DBHandler {
             ps.setDouble(6, salarioXhora);
 
             filasAfectadas = ps.executeUpdate();
-
-        }catch (SQLException e){
-            e.printStackTrace();
         }
+
+        if(filasAfectadas <= 0){
+            throw new AccionInvalidaEx("No se encontro el mecanico");
+        }
+
         return filasAfectadas;
     }
 
     //GUARDAR VEHICULO
-    public static int guardarVehiculo(String patente, double kilometraje, int idModelo, String dni){
+    public static int guardarVehiculo(String patente, double kilometraje, int idModelo, String dni) throws SQLException, AccionInvalidaEx {
+
         int filasAfectadas = 0;
 
         String sqlAddVehiculo = "INSERT INTO vehiculos(patente, kilometraje, id_modelo, dni) VALUES (?, ?, ?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlAddVehiculo)){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlAddVehiculo)) {
 
             ps.setString(1, patente);
             ps.setDouble(2, kilometraje);
@@ -161,21 +165,24 @@ public class DBHandler {
             ps.setString(4, dni);
 
             filasAfectadas = ps.executeUpdate();
-
-        }catch (SQLException e){
-            e.printStackTrace();
         }
+
+        if(filasAfectadas <= 0){
+            throw new AccionInvalidaEx("No se encontro el vehiculo");
+        }
+
         return filasAfectadas;
     }
 
     //GUARDAR ORDEN DE TRABAJO
-    public static int guardarOrdenDeTrabajo(String descripcion, EstadoOrden estado, double horas_trabajadas, String patente, String dni_mecanico){
+    public static int guardarOrdenDeTrabajo(String descripcion, EstadoOrden estado, double horas_trabajadas, String patente, String dni_mecanico) throws SQLException {
+
         int idAgregado = -1;
 
         String sqlAddOrdenTrabajo = "INSERT INTO ordenes_trabajo(descripcion, estado, horas_trabajadas, patente, dni_mecanico) VALUES (?, ?, ?, ?, ?)";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlAddOrdenTrabajo, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlAddOrdenTrabajo, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, descripcion);
             ps.setString(2, String.valueOf(estado));
@@ -185,82 +192,82 @@ public class DBHandler {
 
             ps.executeUpdate();
 
-            try(ResultSet rs = ps.getGeneratedKeys()){
-                while (rs.next()){
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                while (rs.next()) {
                     idAgregado = rs.getInt(1);
                 }
             }
-        }catch (SQLException e){
-            e.printStackTrace();
         }
+
         return idAgregado;
     }
 
     //ACTUALIZAR STOCK REPUESTO
-    public static boolean actualizarStockRepuesto(int id_repuesto, int cantidad){
+    public static boolean actualizarStockRepuesto(int id_repuesto, int cantidad) throws SQLException {
+
         String sqlActualizarStock = "UPDATE repuestos SET stock = ? WHERE id_repuesto = ?";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlActualizarStock);){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlActualizarStock)) {
 
             ps.setInt(1, cantidad);
             ps.setInt(2, id_repuesto);
 
             int filasAfectadas = ps.executeUpdate();
 
-            if(filasAfectadas == 1){
+            if (filasAfectadas == 1) {
                 return true;
             }
-        }catch (SQLException e){
-            e.printStackTrace();
         }
+
         return false;
     }
 
     //OBTENER REPUESTO POR ID
-    public static Repuesto getRespuestoPorID(int id_repuesto) {
+    public static Repuesto getRespuestoPorID(int id_repuesto) throws SQLException, AccionInvalidaEx {
 
         Repuesto buscado = null;
 
         String sqlGetRepuesto = "SELECT * FROM repuestos WHERE id_repuesto = ?";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlGetRepuesto);){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlGetRepuesto)) {
 
             ps.setInt(1, id_repuesto);
 
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next()){
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     int id = rs.getInt("id_repuesto");
                     String nombre = rs.getString("nombre");
                     double precio = rs.getDouble("precio");
                     int stock = rs.getInt("stock");
 
                     buscado = new Repuesto(id, nombre, precio, stock);
-
                 }
             }
+        }
 
-        }catch (SQLException | AccionInvalidaEx e){
-            e.printStackTrace();
+        if(buscado == null){
+            throw new AccionInvalidaEx("No se encontro el repuesto");
         }
 
         return buscado;
     }
 
     //OBTENER CLIENTE POR DNI
-    public static Cliente getClientePorDNI(String dni){
+    public static Cliente getClientePorDNI(String dni) throws SQLException, AccionInvalidaEx {
+
         Cliente buscado = null;
 
         String sqlGetCliente = "SELECT * FROM clientes WHERE dni = ?";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlGetCliente);){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlGetCliente)) {
 
             ps.setString(1, dni);
 
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next()){
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     String dniB = rs.getString("dni");
                     String nombre = rs.getString("nombre");
                     String apellido = rs.getString("apellido");
@@ -270,25 +277,29 @@ public class DBHandler {
                     buscado = new Cliente(dni, nombre, apellido, telefono, email);
                 }
             }
-        }catch (SQLException | AccionInvalidaEx e){
-            e.printStackTrace();
         }
+
+        if(buscado == null){
+            throw new AccionInvalidaEx("No se encontro el cliente");
+        }
+
         return buscado;
     }
 
     //OBTENER MECANICO POR DNI
-    public static Mecanico getMecanicoPorDni(String dni){
+    public static Mecanico getMecanicoPorDni(String dni) throws SQLException, AccionInvalidaEx {
+
         Mecanico buscado = null;
 
         String sqlGetMecanico = "SELECT * FROM mecanicos WHERE dni = ?";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlGetMecanico);){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlGetMecanico)) {
 
             ps.setString(1, dni);
 
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next()){
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     String dniB = rs.getString("dni");
                     String nombre = rs.getString("nombre");
                     String apellido = rs.getString("apellido");
@@ -299,28 +310,30 @@ public class DBHandler {
                     buscado = new Mecanico(dniB, nombre, apellido, telefono, especialidad, salario_por_hora);
                 }
             }
+        }
 
-        }catch (SQLException | AccionInvalidaEx e){
-            e.printStackTrace();
+        if(buscado == null){
+            throw new AccionInvalidaEx("No se encontro el mecanico");
         }
 
         return buscado;
     }
 
     //OBTENER MODELO POR ID
-    public static Modelo getModeloPorID(int idModelo){
+    public static Modelo getModeloPorID(int idModelo) throws SQLException, AccionInvalidaEx {
+
         Modelo buscado = null;
 
         String sqlGetModelo = "SELECT * FROM modelos WHERE id_modelo = ?";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlGetModelo);){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlGetModelo)) {
 
             ps.setInt(1, idModelo);
 
-            try(ResultSet rs = ps.executeQuery()){
+            try (ResultSet rs = ps.executeQuery()) {
 
-                if(rs.next()){
+                if (rs.next()) {
                     int id_modelo = rs.getInt("id_modelo");
                     String marca = rs.getString("marca");
                     String linea = rs.getString("linea");
@@ -329,62 +342,68 @@ public class DBHandler {
                     buscado = new Modelo(id_modelo, marca, linea, anio);
                 }
             }
-        }catch (SQLException e){
-            e.printStackTrace();
         }
+
+        if(buscado == null){
+            throw new AccionInvalidaEx("No se encontro el modelo");
+        }
+
         return buscado;
     }
 
     //OBTENER VEHICULO POR PATENTE
-    public static Vehiculo getVehiculoPorPatente(String patente) throws SQLException, AccionInvalidaEx{
+    public static Vehiculo getVehiculoPorPatente(String patente) throws SQLException, AccionInvalidaEx {
+
         Vehiculo buscado = null;
 
         String sqlGetVehiculo = "SELECT * FROM vehiculos WHERE patente = ?";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlGetVehiculo);){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlGetVehiculo)) {
 
             ps.setString(1, patente);
 
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next()){
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     String patenteB = rs.getString("patente");
                     double kms = rs.getDouble("kilometraje");
                     int idModelo = rs.getInt("id_modelo");
                     String dni = rs.getString("dni");
 
-
                     Cliente cliente = getClientePorDNI(dni);
-                    if(cliente == null){
+
+                    if (cliente == null) {
                         throw new AccionInvalidaEx("El cliente es nulo");
                     }
 
                     Modelo modelo = getModeloPorID(idModelo);
-                    if(modelo == null) {
+
+                    if (modelo == null) {
                         throw new AccionInvalidaEx("El modelo esta vacio");
                     }
+
                     buscado = new Vehiculo(patenteB, kms, cliente, modelo);
                 }
-
             }
-        }catch (SQLException | AccionInvalidaEx e){
-            e.printStackTrace();
         }
+
         return buscado;
     }
 
     //OBTENER ORDEN DE TRABAJO POR ID
-    public static OrdenDeTrabajo getOrdenDeTrabajoPorID(int id){
+    public static OrdenDeTrabajo getOrdenDeTrabajoPorID(int id) throws SQLException, AccionInvalidaEx {
+
         OrdenDeTrabajo buscado = null;
 
         String sqlGetOrdenDeTrabajo = "SELECT * FROM ordenes_trabajo WHERE id_orden = ?";
 
-        try(Connection connection = DriverManager.getConnection(url);
-            PreparedStatement ps = connection.prepareStatement(sqlGetOrdenDeTrabajo);){
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sqlGetOrdenDeTrabajo)) {
+
             ps.setInt(1, id);
 
-            try(ResultSet rs = ps.executeQuery()){
-                if(rs.next()){
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
                     int id_orden = rs.getInt("id_orden");
                     String descripcion = rs.getString("descripcion");
                     EstadoOrden estado = EstadoOrden.valueOf(rs.getString("estado"));
@@ -393,27 +412,23 @@ public class DBHandler {
                     String dniMeca = rs.getString("dni_mecanico");
 
                     Vehiculo vehiculo = getVehiculoPorPatente(patente);
-                    if(vehiculo == null){
-                        //TODO agregar exception
-                    }
-                    Mecanico mecanico = getMecanicoPorDni(dniMeca);
-                    if(dniMeca == null){
-                        //TODO agregar Execption
+
+                    if (vehiculo == null) {
+                        throw new AccionInvalidaEx("El vehiculo es nulo");
                     }
 
+                    Mecanico mecanico = getMecanicoPorDni(dniMeca);
+
+                    if (dniMeca == null) {
+                        throw new AccionInvalidaEx("mecanico nulo");
+                    }
 
                     buscado = new OrdenDeTrabajo(id_orden, descripcion, horasTrabajadas, estado, vehiculo, mecanico);
-
                 }
             }
-        }catch (SQLException e){
-            e.printStackTrace();
         }
 
         return buscado;
     }
-    
-
-
-
 }
+
