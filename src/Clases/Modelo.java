@@ -35,6 +35,10 @@ public class Modelo {
         this.anio = anio;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getMarca() {
         return marca;
     }

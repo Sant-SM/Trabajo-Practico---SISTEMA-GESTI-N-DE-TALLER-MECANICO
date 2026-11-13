@@ -2,7 +2,9 @@
 package Clases;
 
 import Exepciones.AccionInvalidaEx;
+import Exepciones.OrdenInvalidaException;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class GestorTaller {
@@ -16,14 +18,21 @@ public class GestorTaller {
 
     // CLIENTES, MECANICOS, VEHICULOS, REPUESTOS REQUIEREN CLASE GENERICA
 
-    public GestorTaller() {
+    public GestorTaller() throws SQLException, AccionInvalidaEx {
         this.db = new DBHandler();
         this.db.conectar(); // todo... CONECTAR es un metodo INNECESARIO si las conexiones duran lo que dura la instancia del metodo... Considerarlo
 
         this.cacheClientes = new CacheMemoria<>();
+        this.cacheClientes.cargarTodos(DBHandler.obtenerTodosLosClientes());
+
         this.cacheMecanicos = new CacheMemoria<>();
+        this.cacheMecanicos.cargarTodos(DBHandler.obtenerTodosLosMecanicos());
+
         this.cacheVehiculos = new CacheMemoria<>();
+        this.cacheVehiculos.cargarTodos(DBHandler.obtenerTodosLosVehiculos());
+
         this.cacheRepuestos = new CacheMemoria<>();
+        this.cacheRepuestos.cargarTodos(DBHandler.obtenerTodosLosRepuestos());
     }
 
 
@@ -42,46 +51,82 @@ public class GestorTaller {
 
     // ===============================================================================================================================/CLIENTES/
 
-    public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) throws AccionInvalidaEx {
+    public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) throws AccionInvalidaEx, SQLException {
         Cliente nuevoCliente = new Cliente(dni, nombre, apellido, telefono, email);
+
+        if(cacheClientes.existe(nuevoCliente.getDni())){
+           throw new AccionInvalidaEx("Ya existe un cliente con el dni: "+ dni);
+        }
+
+        if(DBHandler.guardarCliente(dni, nombre, apellido, telefono, email) != 1){
+            throw new AccionInvalidaEx("No se pudo guardar el cliente en la base de datos");
+        }
 
         cacheClientes.agregar(dni, nuevoCliente);
 
-        // db.guardarCliente(nuevoCliente); // Aca se llamaria al INSERT
-        return "EXITO: Cliente '" + nombre + " " + apellido + "' registrado correctamente en el sistema.";
+        return "EXITO: Cliente '" + nombre + "' (" + email + ") dado de alta.";
     }
 
 
     // ===============================================================================================================================/MECANICOS/
 
-    public String registrarNuevoMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salario) throws AccionInvalidaEx {
+    public String registrarNuevoMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salario) throws AccionInvalidaEx, SQLException {
         Mecanico nuevoMecanico = new Mecanico(dni, nombre, apellido, telefono, especialidad, salario);
+
+        if(cacheMecanicos.existe(nuevoMecanico.getDni())){
+            throw new AccionInvalidaEx("Ya existe un mecanico con el dni: "+ dni);
+        }
+        if(DBHandler.guardarMecanico(dni, nombre, apellido, telefono, especialidad, salario) != 1){
+            throw new AccionInvalidaEx("No se pudo guardar el mecanico en la base de datos");
+        }
 
         cacheMecanicos.agregar(dni, nuevoMecanico);
 
-        // db.guardarMecanico(nuevoMecanico);
         return "EXITO: Mecanico '" + nombre + "' (" + especialidad + ") dado de alta.";
     }
 
 
     // ===============================================================================================================================/VEHICULOS/
 
-    public String ingresarVehiculo(String patente, double kilometraje, Modelo modelo, Cliente propietario) throws AccionInvalidaEx {
+    public String ingresarVehiculo(String patente, double kilometraje, Modelo modelo, Cliente propietario) throws AccionInvalidaEx, SQLException {
+
         Vehiculo nuevoVehiculo = new Vehiculo(patente, kilometraje, propietario, modelo);
+
+        if(cacheVehiculos.existe(nuevoVehiculo.getPatente())){
+            throw new AccionInvalidaEx("Ya existe un vehiculo con la patente: "+ patente);
+        }
+        if(DBHandler.guardarVehiculo(patente, kilometraje, modelo.getId(), propietario.getDni()) != 1){
+            throw new AccionInvalidaEx("No se pudo guardar el mecanico en la base de datos");
+        }
 
         cacheVehiculos.agregar(patente, nuevoVehiculo);
 
-        // db.guardarVehiculo(nuevoVehiculo);
         return "EXITO: Vehiculo patente [" + patente + "] ingreso al taller a nombre de " + propietario.getNombre() + ".";
     }
 
 
     // ===============================================================================================================================/REPUESTOS E INVENTARIO/
 
+    public String ingresarRepuesto(String nombre, double precio, int stock) throws AccionInvalidaEx, SQLException {
+        Repuesto aux = new Repuesto(nombre, precio, stock);
+
+        int idAgregado = DBHandler.guardarRepuesto(nombre, precio, stock);
+
+        if(idAgregado == -1){
+            throw new AccionInvalidaEx("No se pudo guardar el repuesto en la base de datos");
+        }
+
+        Repuesto nuevoRepuesto = new Repuesto(idAgregado, nombre, precio, stock);
+
+        cacheRepuestos.agregar(idAgregado, nuevoRepuesto);
+
+        return "EXITO: Repuesto ID [" + nuevoRepuesto.getId() + "] se agrego correctamente";
+    }
+
 
     // ===============================================================================================================================/ORDENES/
 
-    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) throws AccionInvalidaEx /*throws StockInsuficienteException, OrdenInvalidaException*/ {
+    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) throws AccionInvalidaEx, OrdenInvalidaException /*throws StockInsuficienteException, OrdenInvalidaException*/ {
 
         StringBuilder ticket = new StringBuilder();
         ticket.append("\n=== COMPROBANTE DE REPARACION ===\n");

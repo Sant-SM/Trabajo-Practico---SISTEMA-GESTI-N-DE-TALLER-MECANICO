@@ -25,5 +25,7 @@ public class CacheMemoria<K, T> {
     public boolean existe(K clave) {
         return cache.containsKey(clave);
     }
+
+    public void cargarTodos(HashMap<K, T> elementos){cache.putAll(elementos);}
 }
 

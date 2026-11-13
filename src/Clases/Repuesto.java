@@ -11,11 +11,7 @@ public class Repuesto implements Iidentificable <Integer> {
     private double precio;
     private int stock;
 
-    public Repuesto(int idRepuesto, String nombre, double precio, int stock) throws AccionInvalidaEx {
-
-        if (idRepuesto <= 0) {
-            throw new AccionInvalidaEx("ID invalido");
-        }
+    public Repuesto(String nombre, double precio, int stock) throws AccionInvalidaEx {
 
         if (nombre == null) {
             throw new AccionInvalidaEx("Nombre vacio");
@@ -29,6 +25,12 @@ public class Repuesto implements Iidentificable <Integer> {
             throw new AccionInvalidaEx("Stock invalido");
         }
 
+        this.nombre = nombre;
+        this.precio = precio;
+        this.stock = stock;
+    }
+
+    public Repuesto(int idRepuesto, String nombre, double precio, int stock) {
         this.idRepuesto = idRepuesto;
         this.nombre = nombre;
         this.precio = precio;
