@@ -20,15 +20,15 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
     private Vehiculo vehiculo;
     private Mecanico mecanico;
 
-    public OrdenDeTrabajo(int idOrden, String descripcionProblema, Vehiculo vehiculo, Mecanico mecanico) throws AccionInvalidaEx {
+    public OrdenDeTrabajo(int idOrden, String descripcionProblema,
+                          Vehiculo vehiculo, Mecanico mecanico) throws AccionInvalidaEx {
+
         if (descripcionProblema == null) {
             throw new AccionInvalidaEx("Descripcion vacia");
         }
-
         if (vehiculo == null) {
             throw new AccionInvalidaEx("Vehiculo invalido");
         }
-
         if (mecanico == null) {
             throw new AccionInvalidaEx("Mecanico invalido");
         }
@@ -42,7 +42,10 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
         this.mecanico = mecanico;
     }
 
-    public OrdenDeTrabajo(int idOrden, String descripcionProblema, double horasTrabajadas, EstadoOrden estadoOrden, Vehiculo vehiculo, Mecanico mecanico) {
+    public OrdenDeTrabajo(int idOrden, String descripcionProblema,
+                          double horasTrabajadas, EstadoOrden estadoOrden,
+                          Vehiculo vehiculo, Mecanico mecanico) {
+
         this.idOrden = idOrden;
         this.descripcionProblema = descripcionProblema;
         this.horasTrabajadas = horasTrabajadas;
@@ -85,11 +88,13 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
     }
 
     public ArrayList<DetalleOrden> getDetallesOrden() {
-        return detallesOrden;
+        return new ArrayList<>(detallesOrden);
     }
 
     public void setDetallesOrden(ArrayList<DetalleOrden> detallesOrden) {
-        this.detallesOrden = detallesOrden;
+        if (detallesOrden != null) {
+            this.detallesOrden = new ArrayList<>(detallesOrden);
+        }
     }
 
     public Vehiculo getVehiculo() {
@@ -110,43 +115,62 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
 
     @Override
     public Integer getId() {
-        return this.idOrden;
+        return idOrden;
     }
 
     public void agregarRepuesto(Repuesto repuesto, int cantidad)
             throws OrdenInvalidaException, StockInsuficienteException, AccionInvalidaEx {
 
-        if (this.estadoOrden == EstadoOrden.FINALIZADA || this.estadoOrden == EstadoOrden.CANCELADA) {
-            throw new OrdenInvalidaException("No se pueden agregar repuestos a una orden cerrada.");
+        if (estadoOrden == EstadoOrden.FINALIZADA ||
+                estadoOrden == EstadoOrden.CANCELADA) {
+            throw new OrdenInvalidaException("La orden ya esta cerrada");
         }
+
+        if (repuesto == null) {
+            throw new AccionInvalidaEx("Repuesto invalido");
+        }
+
+        // Primero se crea el detalle y despues se descuenta el stock.
+        DetalleOrden nuevoDetalle = new DetalleOrden(repuesto, cantidad);
 
         repuesto.descontarStock(cantidad);
 
-        DetalleOrden nuevoDetalle = new DetalleOrden(repuesto, cantidad);
+        detallesOrden.add(nuevoDetalle);
 
-        this.detallesOrden.add(nuevoDetalle);
-
-        if (this.estadoOrden == EstadoOrden.PENDIENTE) {
-            this.estadoOrden = EstadoOrden.EN_PROCESO;
+        if (estadoOrden == EstadoOrden.PENDIENTE) {
+            estadoOrden = EstadoOrden.EN_PROCESO;
         }
     }
 
-    public void finalizarOrden(double horasTotales) throws OrdenInvalidaException {
-        if (this.estadoOrden != EstadoOrden.EN_PROCESO) {
-            throw new OrdenInvalidaException("Solo se pueden finalizar ordenes En Proceso.");
+    public void finalizarOrden(double horasTotales)
+            throws OrdenInvalidaException {
+
+        if (estadoOrden != EstadoOrden.EN_PROCESO) {
+            throw new OrdenInvalidaException(
+                    "Solo se pueden finalizar ordenes en proceso"
+            );
         }
 
-        this.horasTrabajadas = horasTotales;
-        this.estadoOrden = EstadoOrden.FINALIZADA;
+        if (horasTotales <= 0) {
+            throw new OrdenInvalidaException(
+                    "Las horas trabajadas deben ser mayores a cero"
+            );
+        }
+
+        horasTrabajadas = horasTotales;
+        estadoOrden = EstadoOrden.FINALIZADA;
+    }
+
+    public boolean estaActiva() {
+        return estadoOrden == EstadoOrden.PENDIENTE ||
+                estadoOrden == EstadoOrden.EN_PROCESO;
     }
 
     @Override
     public double calcularTotal() {
-        double total = 0;
+        double total = mecanico.getSalarioPorHora() * horasTrabajadas;
 
-        total += this.mecanico.getSalarioPorHora() * this.horasTrabajadas;
-
-        for (DetalleOrden detalle : this.detallesOrden) {
+        for (DetalleOrden detalle : detallesOrden) {
             total += detalle.calcularTotal();
         }
 
@@ -155,15 +179,13 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
 
     @Override
     public String toString() {
-        return "OrdenDeTrabajo{" +
-                "idOrden=" + idOrden +
-                ", descripcionProblema='" + descripcionProblema + '\'' +
-                ", horasTrabajadas=" + horasTrabajadas +
-                ", estadoOrden=" + estadoOrden +
-                ", detallesOrden=" + detallesOrden +
-                ", vehiculo=" + vehiculo +
-                ", mecanico=" + mecanico +
-                '}';
+        return "Orden N: " + idOrden +
+                "\nDescripcion: " + descripcionProblema +
+                "\nEstado: " + estadoOrden +
+                "\nVehiculo: " + vehiculo.getPatente() +
+                "\nMecanico: " + mecanico.getNombre() +
+                "\nHoras trabajadas: " + horasTrabajadas +
+                "\nTotal: $" + calcularTotal();
     }
 }
 

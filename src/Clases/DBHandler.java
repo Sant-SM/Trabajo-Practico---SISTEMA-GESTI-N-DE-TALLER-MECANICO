@@ -6,6 +6,7 @@ import Enums.EstadoOrden;
 import Exepciones.AccionInvalidaEx;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DBHandler {
@@ -729,6 +730,38 @@ public class DBHandler {
         return modelos;
 
     }
+
+
+    // OBTENER TODAS LAS ORDENES ACTIVAS
+    public static ArrayList<OrdenDeTrabajo> obtenerOrdenesActivas()
+            throws SQLException, AccionInvalidaEx {
+
+        ArrayList<Integer> ids = new ArrayList<>();
+        ArrayList<OrdenDeTrabajo> ordenes = new ArrayList<>();
+
+        String sql = "SELECT id_orden FROM ordenes_trabajo " +
+                "WHERE estado = 'PENDIENTE' OR estado = 'EN_PROCESO'";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                ids.add(rs.getInt("id_orden"));
+            }
+        }
+
+        for (Integer id : ids) {
+            OrdenDeTrabajo orden = getOrdenDeTrabajoPorID(id);
+
+            if (orden != null) {
+                ordenes.add(orden);
+            }
+        }
+
+        return ordenes;
+    }
+
 
 
 }

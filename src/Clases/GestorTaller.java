@@ -19,11 +19,9 @@ public class GestorTaller {
     private CacheMemoria<Integer, Repuesto> cacheRepuestos;
     private CacheMemoria<Integer, Modelo> cacheModelo;
 
-    // CLIENTES, MECANICOS, VEHICULOS, REPUESTOS REQUIEREN CLASE GENERICA
-
     public GestorTaller() throws SQLException, AccionInvalidaEx {
+
         this.db = new DBHandler();
-     //   DBHandler.crearTablas();
 
         this.cacheClientes = new CacheMemoria<>();
         this.cacheClientes.cargarTodos(DBHandler.obtenerTodosLosClientes());
@@ -41,375 +39,689 @@ public class GestorTaller {
         this.cacheModelo.cargarTodos(DBHandler.obtenerTodosLosModelos());
     }
 
+    // =========================================================
+    // IMPRIMIR LISTADOS
+    // =========================================================
 
-    // ===============================================================================================================================/IMPRIMIR/
-
-    // Este es el metodo generico
     public <T> String imprimirListado(ArrayList<T> lista) {
-        String info = "\n --- Listado --- \n";
+
+        StringBuilder info = new StringBuilder();
+
+        info.append("\n========== LISTADO ==========\n");
+
         for (T elemento : lista) {
-            info += elemento.toString() + "\n";
+            info.append(elemento.toString()).append("\n");
+            info.append("-----------------------------\n");
         }
-        info += "-----------------------\n";
-        return info;
+
+        return info.toString();
     }
 
+    // =========================================================
+    // CLIENTES
+    // =========================================================
 
-    // ===============================================================================================================================/CLIENTES/
+    public String registrarNuevoCliente(String dni, String nombre,
+                                        String apellido, String telefono,
+                                        String email)
+            throws AccionInvalidaEx, SQLException {
 
-    //REGISTRAR UN NUEVO CLIENTE
-    public String registrarNuevoCliente(String dni, String nombre, String apellido, String telefono, String email) throws AccionInvalidaEx, SQLException {
-        Cliente nuevoCliente = new Cliente(dni, nombre, apellido, telefono, email);
+        Cliente nuevoCliente = new Cliente(
+                dni, nombre, apellido, telefono, email
+        );
 
-        if(cacheClientes.existe(nuevoCliente.getDni())){
-           throw new AccionInvalidaEx("Ya existe un cliente con el dni: "+ dni);
+        if (cacheClientes.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "Ya existe un cliente con el dni: " + dni
+            );
         }
 
-        if(DBHandler.guardarCliente(dni, nombre, apellido, telefono, email) != 1){
-            throw new AccionInvalidaEx("No se pudo guardar el cliente en la base de datos");
+        if (DBHandler.guardarCliente(
+                dni, nombre, apellido, telefono, email) != 1) {
+
+            throw new AccionInvalidaEx(
+                    "No se pudo guardar el cliente en la base de datos"
+            );
         }
 
         cacheClientes.agregar(dni, nuevoCliente);
 
-        return "EXITO: Cliente '" + nombre + "' (" + email + ") dado de alta.";
+        return "EXITO: Cliente '" + nombre + "' dado de alta.";
     }
 
+    public Cliente buscarClientePorDni(String dni)
+            throws AccionInvalidaEx {
 
-    //BUSCAR CLIENTE POR DNI
-    public Cliente buscarClientePorDni(String dni) throws AccionInvalidaEx{
-        if(!cacheClientes.existe(dni)){
-            throw new AccionInvalidaEx("No existe cliente con ese dni");
+        if (!cacheClientes.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "No existe cliente con ese dni"
+            );
+        }
+
+        return cacheClientes.obtener(dni);
+    }
+
+    public String modificarTelefonoCliente(String dni, String nuevoTelefono)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheClientes.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "No existe cliente con ese dni"
+            );
         }
 
         Cliente cliente = cacheClientes.obtener(dni);
 
-        return cliente;
-    }
+        int filasAfectadas = DBHandler.actualizarDatosCliente(
+                dni,
+                cliente.getNombre(),
+                cliente.getApellido(),
+                nuevoTelefono,
+                cliente.getEmail()
+        );
 
-    //MODIFICAR TELEFONO DE CLIENTE
-    public String modificarTelefonoCliente(String dni, String nuevoTelefono) throws AccionInvalidaEx, SQLException {
-        if(!cacheClientes.existe(dni)){
-            throw new AccionInvalidaEx("No existe cliente con ese dni");
-        }
-        Cliente c = cacheClientes.obtener(dni);
-
-        int filasAfectadas = DBHandler.actualizarDatosCliente(c.getDni(), c.getNombre(), c.getApellido(), nuevoTelefono, c.getEmail());
-
-        if(filasAfectadas != 1){
-            throw new AccionInvalidaEx("No se pudo actualizar el telefono");
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx(
+                    "No se pudo actualizar el telefono"
+            );
         }
 
-        c.setTelefono(nuevoTelefono);
+        cliente.setTelefono(nuevoTelefono);
 
-        return "Telefono Actualizado";
+        return "Telefono actualizado correctamente";
     }
 
-    //ELIMINAR CLIENTE
-    public String eliminarCliente(String dni) throws AccionInvalidaEx, SQLException {
-        if(!cacheClientes.existe(dni)){
-            throw new AccionInvalidaEx("No existe cliente con ese dni");
+    public String eliminarCliente(String dni)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheClientes.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "No existe cliente con ese dni"
+            );
         }
 
         int filasAfectadas = DBHandler.eliminarCliente(dni);
 
-        if(filasAfectadas != 1){
-            throw new AccionInvalidaEx("No se pudo eliminar el cliente");
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx(
+                    "No se pudo eliminar el cliente"
+            );
         }
 
-        Cliente c = cacheClientes.obtener(dni);
-
+        Cliente cliente = cacheClientes.obtener(dni);
         cacheClientes.eliminar(dni);
 
-        return "El cliente " + c.getNombre() + " " + c.getApellido() + "con DNI: " + c.getDni() + " a sido eliminado del sistema";
+        return "El cliente " + cliente.getNombre() + " "
+                + cliente.getApellido() + " con DNI: "
+                + cliente.getDni() + " fue eliminado";
     }
 
+    // BUSCAR CLIENTES POR NOMBRE
 
-    // ===============================================================================================================================/MECANICOS/
+    public ArrayList<Cliente> buscarClientesPorNombre(String nombre)
+            throws SQLException, AccionInvalidaEx {
 
-    public String registrarNuevoMecanico(String dni, String nombre, String apellido, String telefono, String especialidad, double salario) throws AccionInvalidaEx, SQLException {
-        Mecanico nuevoMecanico = new Mecanico(dni, nombre, apellido, telefono, especialidad, salario);
-
-        if(cacheMecanicos.existe(nuevoMecanico.getDni())){
-            throw new AccionInvalidaEx("Ya existe un mecanico con el dni: "+ dni);
+        if (nombre == null) {
+            throw new AccionInvalidaEx("Nombre vacio");
         }
-        if(DBHandler.guardarMecanico(dni, nombre, apellido, telefono, especialidad, salario) != 1){
-            throw new AccionInvalidaEx("No se pudo guardar el mecanico en la base de datos");
+
+        ArrayList<Cliente> encontrados = new ArrayList<>();
+
+        for (Cliente cliente : obtenerClientes()) {
+
+            if (cliente.getNombre().toLowerCase()
+                    .contains(nombre.toLowerCase())) {
+
+                encontrados.add(cliente);
+            }
+        }
+
+        return encontrados;
+    }
+
+    // =========================================================
+    // MECANICOS
+    // =========================================================
+
+    public String registrarNuevoMecanico(String dni, String nombre,
+                                         String apellido, String telefono,
+                                         String especialidad, double salario)
+            throws AccionInvalidaEx, SQLException {
+
+        Mecanico nuevoMecanico = new Mecanico(
+                dni, nombre, apellido, telefono, especialidad, salario
+        );
+
+        if (cacheMecanicos.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "Ya existe un mecanico con el dni: " + dni
+            );
+        }
+
+        if (DBHandler.guardarMecanico(
+                dni, nombre, apellido, telefono,
+                especialidad, salario) != 1) {
+
+            throw new AccionInvalidaEx(
+                    "No se pudo guardar el mecanico"
+            );
         }
 
         cacheMecanicos.agregar(dni, nuevoMecanico);
 
-        return "EXITO: Mecanico '" + nombre + "' (" + especialidad + ") dado de alta.";
+        return "EXITO: Mecanico '" + nombre + "' dado de alta.";
     }
 
+    public Mecanico buscarMecanicoPorDni(String dni)
+            throws AccionInvalidaEx {
 
-    //BUSCAR MECANICO POR DNI
-    public Mecanico buscarMecanicoPorDni(String dni) throws AccionInvalidaEx{
-        if(!cacheMecanicos.existe(dni)){
-            throw new AccionInvalidaEx("No existe mecanico con ese dni");
+        if (!cacheMecanicos.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "No existe mecanico con ese dni"
+            );
+        }
+
+        return cacheMecanicos.obtener(dni);
+    }
+
+    public String modificarSalarioDeMecanico(String dni, double nuevoSalario)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheMecanicos.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "No existe mecanico con ese dni"
+            );
+        }
+
+        if (nuevoSalario <= 0) {
+            throw new AccionInvalidaEx("Salario invalido");
         }
 
         Mecanico mecanico = cacheMecanicos.obtener(dni);
 
-        return mecanico;
-    }
+        int filasAfectadas = DBHandler.actualizarSalarioMecanico(
+                dni, nuevoSalario
+        );
 
-    //MODIFICAR SALARIO DE MECANICO
-    public String modificarSalarioDeMecanico(String dni, double nuevoSalario) throws AccionInvalidaEx, SQLException {
-        if(!cacheMecanicos.existe(dni)){
-            throw new AccionInvalidaEx("No existe mecanico con ese dni");
-        }
-        Mecanico m = cacheMecanicos.obtener(dni);
-
-        int filasAfectadas = DBHandler.actualizarSalarioMecanico(dni, nuevoSalario);
-
-        if(filasAfectadas != 1){
-            throw new AccionInvalidaEx("No se pudo actualizar el salario");
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx(
+                    "No se pudo actualizar el salario"
+            );
         }
 
-        m.setSalarioPorHora(nuevoSalario);
+        mecanico.setSalarioPorHora(nuevoSalario);
 
-        return "Salario Actualizado";
+        return "Salario actualizado correctamente";
     }
 
-    //ELIMINAR MECANICO
-    public String eliminarMecanico(String dni) throws AccionInvalidaEx, SQLException {
-        if(!cacheMecanicos.existe(dni)){
-            throw new AccionInvalidaEx("No existe mecanico con ese dni");
+    public String eliminarMecanico(String dni)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheMecanicos.existe(dni)) {
+            throw new AccionInvalidaEx(
+                    "No existe mecanico con ese dni"
+            );
         }
 
         int filasAfectadas = DBHandler.eliminarMecanico(dni);
 
-        if(filasAfectadas != 1){
-            throw new AccionInvalidaEx("No se pudo eliminar al mecanico");
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx(
+                    "No se pudo eliminar al mecanico"
+            );
         }
 
-        Mecanico m = cacheMecanicos.obtener(dni);
-
+        Mecanico mecanico = cacheMecanicos.obtener(dni);
         cacheMecanicos.eliminar(dni);
 
-        return "El mecanico " + m.getNombre() + " " + m.getApellido() + "con DNI: " + m.getDni() + " a sido eliminado del sistema";
+        return "El mecanico " + mecanico.getNombre() + " "
+                + mecanico.getApellido() + " fue eliminado";
     }
 
+    // BUSCAR MECANICOS POR NOMBRE
 
+    public ArrayList<Mecanico> buscarMecanicosPorNombre(String nombre)
+            throws SQLException, AccionInvalidaEx {
 
-    // ===============================================================================================================================/VEHICULOS/
-
-    public String ingresarVehiculo(String patente, double kilometraje, Modelo modelo, Cliente propietario) throws AccionInvalidaEx, SQLException {
-
-        Vehiculo nuevoVehiculo = new Vehiculo(patente, kilometraje, propietario, modelo);
-
-        if(cacheVehiculos.existe(nuevoVehiculo.getPatente())){
-            throw new AccionInvalidaEx("Ya existe un vehiculo con la patente: "+ patente);
+        if (nombre == null) {
+            throw new AccionInvalidaEx("Nombre vacio");
         }
-        if(DBHandler.guardarVehiculo(patente, kilometraje, modelo.getId(), propietario.getDni()) != 1){
-            throw new AccionInvalidaEx("No se pudo guardar el mecanico en la base de datos");
+
+        ArrayList<Mecanico> encontrados = new ArrayList<>();
+
+        for (Mecanico mecanico : obtenerMecanicos()) {
+
+            if (mecanico.getNombre().toLowerCase()
+                    .contains(nombre.toLowerCase())) {
+
+                encontrados.add(mecanico);
+            }
+        }
+
+        return encontrados;
+    }
+
+    // =========================================================
+    // VEHICULOS
+    // =========================================================
+
+    public String ingresarVehiculo(String patente, double kilometraje,
+                                   Modelo modelo, Cliente propietario)
+            throws AccionInvalidaEx, SQLException {
+
+        Vehiculo nuevoVehiculo = new Vehiculo(
+                patente, kilometraje, propietario, modelo
+        );
+
+        if (cacheVehiculos.existe(patente)) {
+            throw new AccionInvalidaEx(
+                    "Ya existe un vehiculo con la patente: " + patente
+            );
+        }
+
+        if (DBHandler.guardarVehiculo(
+                patente, kilometraje, modelo.getId(),
+                propietario.getDni()) != 1) {
+
+            throw new AccionInvalidaEx(
+                    "No se pudo guardar el vehiculo"
+            );
         }
 
         cacheVehiculos.agregar(patente, nuevoVehiculo);
 
-        return "EXITO: Vehiculo patente [" + patente + "] ingreso al taller a nombre de " + propietario.getNombre() + ".";
+        return "EXITO: Vehiculo patente [" + patente
+                + "] registrado a nombre de "
+                + propietario.getNombre();
     }
 
-    public Vehiculo buscarVehiculoPorPatente(String patente) throws AccionInvalidaEx{
-        if(!cacheVehiculos.existe(patente)){
-            throw new AccionInvalidaEx("No existe vehiculo con esa patente");
+    public Vehiculo buscarVehiculoPorPatente(String patente)
+            throws AccionInvalidaEx {
+
+        if (!cacheVehiculos.existe(patente)) {
+            throw new AccionInvalidaEx(
+                    "No existe vehiculo con esa patente"
+            );
         }
 
-        Vehiculo vehiculo = cacheVehiculos.obtener(patente);
-
-        return vehiculo;
+        return cacheVehiculos.obtener(patente);
     }
 
-    public String eliminarVehiculo(String patente) throws AccionInvalidaEx, SQLException {
-        if(!cacheVehiculos.existe(patente)){
-            throw new AccionInvalidaEx("No existe vehiculo con esa patente");
+    public String eliminarVehiculo(String patente)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheVehiculos.existe(patente)) {
+            throw new AccionInvalidaEx(
+                    "No existe vehiculo con esa patente"
+            );
         }
 
         int filasAfectadas = DBHandler.eliminarVehiculo(patente);
 
-        if(filasAfectadas != 1){
-            throw new AccionInvalidaEx("No se pudo eliminar el vehiculo");
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx(
+                    "No se pudo eliminar el vehiculo"
+            );
         }
 
-        Vehiculo v = cacheVehiculos.obtener(patente);
         cacheVehiculos.eliminar(patente);
 
-        return "El vehiculo con patente " + v.getPatente() + " ha sido eliminado del sistema";
+        return "Vehiculo con patente " + patente
+                + " eliminado correctamente";
     }
 
-    public String actualizarKilometraje(String patente, double nuevoKilometros) throws AccionInvalidaEx, SQLException {
-        if(!cacheVehiculos.existe(patente)){
-            throw new AccionInvalidaEx("No existe vehiculo con esa patente");
+    public String actualizarKilometraje(String patente,
+                                        double nuevoKilometraje)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheVehiculos.existe(patente)) {
+            throw new AccionInvalidaEx(
+                    "No existe vehiculo con esa patente"
+            );
         }
 
-        Vehiculo v = cacheVehiculos.obtener(patente);
+        Vehiculo vehiculo = cacheVehiculos.obtener(patente);
 
-        int filasAfectadas = DBHandler.actualizarKilometrajeVehiculo(patente, nuevoKilometros);
-
-        if(filasAfectadas != 1){
-            throw new AccionInvalidaEx("No se pudo actualizar kilometraje");
+        if (nuevoKilometraje < 0) {
+            throw new AccionInvalidaEx("Kilometraje invalido");
         }
 
-        v.setKilometraje(nuevoKilometros);
+        int filasAfectadas = DBHandler.actualizarKilometrajeVehiculo(
+                patente, nuevoKilometraje
+        );
 
-        return "Actualizacion Exitosa";
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx(
+                    "No se pudo actualizar kilometraje"
+            );
+        }
+
+        vehiculo.setKilometraje(nuevoKilometraje);
+
+        return "Kilometraje actualizado correctamente";
     }
 
-    // ===============================================================================================================================/MODELOS
+    // =========================================================
+    // MODELOS
+    // =========================================================
 
-    public String ingresarModelo(String marca, String linea, int anio) throws AccionInvalidaEx, SQLException {
+    public String ingresarModelo(String marca, String linea, int anio)
+            throws AccionInvalidaEx, SQLException {
+
         Modelo nuevo = new Modelo(marca, linea, anio);
 
         int idAgregado = DBHandler.guardarModelo(marca, linea, anio);
 
-        if(idAgregado == -1){
-            throw new AccionInvalidaEx("No se pudo guardar en la base de datos");
+        if (idAgregado == -1) {
+            throw new AccionInvalidaEx(
+                    "No se pudo guardar el modelo"
+            );
         }
 
+        nuevo = new Modelo(idAgregado, marca, linea, anio);
 
         cacheModelo.agregar(idAgregado, nuevo);
 
-        return "Se pudo";
-
+        return "Modelo registrado correctamente. ID: " + idAgregado;
     }
 
-    public Modelo buscarModeloPorId(int idModelo) throws AccionInvalidaEx {
-        if(!cacheModelo.existe(idModelo)){
-            throw new AccionInvalidaEx("No existe modelo con ese id");
+    public Modelo buscarModeloPorId(int idModelo)
+            throws AccionInvalidaEx {
+
+        if (!cacheModelo.existe(idModelo)) {
+            throw new AccionInvalidaEx(
+                    "No existe modelo con ese id"
+            );
         }
 
         return cacheModelo.obtener(idModelo);
     }
 
-    // ===============================================================================================================================/REPUESTOS E INVENTARIO/
+    // =========================================================
+    // REPUESTOS E INVENTARIO
+    // =========================================================
 
-    public String ingresarRepuesto(String nombre, double precio, int stock) throws AccionInvalidaEx, SQLException {
-        Repuesto aux = new Repuesto(nombre, precio, stock);
+    public String ingresarRepuesto(String nombre, double precio, int stock)
+            throws AccionInvalidaEx, SQLException {
 
-        int idAgregado = DBHandler.guardarRepuesto(nombre, precio, stock);
+        Repuesto nuevo = new Repuesto(nombre, precio, stock);
 
-        if(idAgregado == -1){
-            throw new AccionInvalidaEx("No se pudo guardar el repuesto en la base de datos");
+        int idAgregado = DBHandler.guardarRepuesto(
+                nombre, precio, stock
+        );
+
+        if (idAgregado <= 0) {
+            throw new AccionInvalidaEx(
+                    "No se pudo guardar el repuesto en la base de datos"
+            );
         }
 
-        Repuesto nuevoRepuesto = new Repuesto(idAgregado, nombre, precio, stock);
+        Repuesto nuevoRepuesto = new Repuesto(
+                idAgregado, nombre, precio, stock
+        );
 
         cacheRepuestos.agregar(idAgregado, nuevoRepuesto);
 
-        return "EXITO: Repuesto ID [" + nuevoRepuesto.getId() + "] se agrego correctamente";
+        return "EXITO: Repuesto ID [" + idAgregado
+                + "] agregado correctamente";
     }
 
-    public Repuesto obtenerRepuestoPorID(int idRepuesto) throws AccionInvalidaEx{
-        if(!cacheRepuestos.existe(idRepuesto)){
-            throw new AccionInvalidaEx("No se encuentra repuesto con ese id");
+    public Repuesto obtenerRepuestoPorID(int idRepuesto)
+            throws AccionInvalidaEx {
+
+        if (!cacheRepuestos.existe(idRepuesto)) {
+            throw new AccionInvalidaEx(
+                    "No se encuentra repuesto con ese id"
+            );
+        }
+
+        return cacheRepuestos.obtener(idRepuesto);
+    }
+
+    public String ingresarStock(int idRepuesto, int cantidadAgregada)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheRepuestos.existe(idRepuesto)) {
+            throw new AccionInvalidaEx(
+                    "No existe repuesto con ese id"
+            );
+        }
+
+        if (cantidadAgregada <= 0) {
+            throw new AccionInvalidaEx("Cantidad invalida");
         }
 
         Repuesto repuesto = cacheRepuestos.obtener(idRepuesto);
 
-        return repuesto;
+        int nuevoStock = repuesto.getStock() + cantidadAgregada;
+
+        if (!DBHandler.actualizarStockRepuesto(
+                idRepuesto, nuevoStock)) {
+
+            throw new AccionInvalidaEx(
+                    "No se pudo actualizar el stock"
+            );
+        }
+
+        repuesto.setStock(nuevoStock);
+
+        return "Stock actualizado correctamente";
     }
 
-    public String ingresarStock(int idRepuesto, int cantidadAgregada) throws AccionInvalidaEx, SQLException {
-        if(!cacheRepuestos.existe(idRepuesto)){
-            throw new AccionInvalidaEx("No existe repuesto con ese id");
+    // BUSCAR REPUESTOS POR NOMBRE
+
+    public ArrayList<Repuesto> buscarRepuestosPorNombre(String nombre)
+            throws SQLException, AccionInvalidaEx {
+
+        if (nombre == null) {
+            throw new AccionInvalidaEx("Nombre vacio");
         }
 
-        if(cantidadAgregada <= 0 ){
-            throw new AccionInvalidaEx("Cantidad invalida");
+        ArrayList<Repuesto> encontrados = new ArrayList<>();
+
+        for (Repuesto repuesto : obtenerRepuestos()) {
+
+            if (repuesto.getNombre().toLowerCase()
+                    .contains(nombre.toLowerCase())) {
+
+                encontrados.add(repuesto);
+            }
         }
 
-        Repuesto r = cacheRepuestos.obtener(idRepuesto);
-
-        cantidadAgregada += r.getStock();
-
-        if(!DBHandler.actualizarStockRepuesto(idRepuesto, cantidadAgregada)){
-            throw new AccionInvalidaEx("No se pudo Actualizar el stock");
-        }
-
-        r.setStock(cantidadAgregada);
-
-        return "Stock actualizado con exito";
+        return encontrados;
     }
 
+    // =========================================================
+    // ORDENES DE TRABAJO
+    // =========================================================
 
-    // ===============================================================================================================================/ORDENES/
+    public String registrarYFacturarReparacion(
+            int idOrden,
+            Vehiculo vehiculo,
+            Mecanico mecanico,
+            int idRepuestoUsado,
+            int cantidadUsada,
+            double horasTrabajadas,
+            String descProblema)
+            throws AccionInvalidaEx, OrdenInvalidaException,
+            StockInsuficienteException, SQLException {
 
-    public String registrarYFacturarReparacion(int idOrden, Vehiculo vehiculo, Mecanico mecanico, int idRepuestoUsado, int cantidadUsada, double horasTrabajadas, String descProblema) throws AccionInvalidaEx, OrdenInvalidaException, StockInsuficienteException, SQLException /*throws StockInsuficienteException, OrdenInvalidaException*/ {
-
-        if(!cacheRepuestos.existe(idRepuestoUsado)){
-            throw new AccionInvalidaEx("No existe repuesto con ese id");
+        if (!cacheRepuestos.existe(idRepuestoUsado)) {
+            throw new AccionInvalidaEx(
+                    "No existe repuesto con ese id"
+            );
         }
 
+        if (vehiculo == null || mecanico == null) {
+            throw new AccionInvalidaEx(
+                    "Vehiculo o mecanico invalido"
+            );
+        }
 
-        StringBuilder ticket = new StringBuilder();
-        ticket.append("\n=== COMPROBANTE DE REPARACION ===\n");
-        ticket.append("Orden N: ").append(idOrden).append("\n");
-        ticket.append("Vehiculo: ").append(vehiculo.getPatente()).append("\n");
-        ticket.append("Mecanico asignado: ").append(mecanico.getNombre()).append("\n");
-        ticket.append("---------------------------------\n");
+        Repuesto repuestoUsado = cacheRepuestos.obtener(
+                idRepuestoUsado
+        );
 
+        // Guardamos el stock anterior por si falla el registro.
+        int stockAnterior = repuestoUsado.getStock();
 
-        OrdenDeTrabajo orden = new OrdenDeTrabajo(idOrden, descProblema, vehiculo, mecanico);
-
-
-        Repuesto repuestoUsado = cacheRepuestos.obtener(idRepuestoUsado);
-
+        OrdenDeTrabajo orden = new OrdenDeTrabajo(
+                0, descProblema, vehiculo, mecanico
+        );
 
         orden.agregarRepuesto(repuestoUsado, cantidadUsada);
 
-        ticket.append("Detalle de piezas: \n");
-
-        ticket.append(" - ").append(repuestoUsado.getNombre()).append(" x ").append(cantidadUsada).append(" unidades\n");
-        
         orden.finalizarOrden(horasTrabajadas);
-        ticket.append("Mano de obra:\n");
-        ticket.append(" - ").append(horasTrabajadas).append(" hs trabajadas.\n");
-        ticket.append("---------------------------------\n");
 
         double total = orden.calcularTotal();
-        ticket.append("ESTADO FINAL: ").append(orden.getEstadoOrden()).append("\n");
-        ticket.append("TOTAL A COBRAR: $").append(total).append("\n");
-        ticket.append("=================================");
 
-        DBHandler.actualizarStockRepuesto(repuestoUsado.getIdRepuesto(), repuestoUsado.getStock());
-        DBHandler.guardarOrdenDeTrabajo(descProblema, orden.getEstadoOrden(), horasTrabajadas, vehiculo.getPatente(), mecanico.getDni());
-        // db.guardarOrden(orden);  // Guardamos la orden finalizada
+        // Primero actualizamos el stock en la base de datos.
+        boolean stockActualizado = DBHandler.actualizarStockRepuesto(
+                repuestoUsado.getIdRepuesto(),
+                repuestoUsado.getStock()
+        );
+
+        if (!stockActualizado) {
+            repuestoUsado.setStock(stockAnterior);
+
+            throw new AccionInvalidaEx(
+                    "No se pudo actualizar el stock"
+            );
+        }
+
+        int idGenerado;
+
+        try {
+
+            // SQLite genera el ID automaticamente.
+            idGenerado = DBHandler.guardarOrdenDeTrabajo(
+                    descProblema,
+                    orden.getEstadoOrden(),
+                    horasTrabajadas,
+                    vehiculo.getPatente(),
+                    mecanico.getDni()
+            );
+
+            if (idGenerado <= 0) {
+                throw new AccionInvalidaEx(
+                        "No se pudo guardar la orden"
+                );
+            }
+
+        } catch (SQLException | AccionInvalidaEx ex) {
+
+            // Si falla el guardado, restauramos el stock.
+            repuestoUsado.setStock(stockAnterior);
+
+            DBHandler.actualizarStockRepuesto(
+                    repuestoUsado.getIdRepuesto(),
+                    stockAnterior
+            );
+
+            throw ex;
+        }
+
+        orden.setIdOrden(idGenerado);
+
+        StringBuilder ticket = new StringBuilder();
+
+        ticket.append("\n=================================\n");
+        ticket.append("     COMPROBANTE DE REPARACION\n");
+        ticket.append("=================================\n");
+        ticket.append("Orden N: ").append(idGenerado).append("\n");
+        ticket.append("Vehiculo: ").append(vehiculo.getPatente()).append("\n");
+        ticket.append("Mecanico: ").append(mecanico.getNombre()).append("\n");
+        ticket.append("---------------------------------\n");
+
+        ticket.append("Descripcion: ")
+                .append(descProblema).append("\n");
+
+        ticket.append("Repuesto utilizado: ")
+                .append(repuestoUsado.getNombre()).append("\n");
+
+        ticket.append("Cantidad: ")
+                .append(cantidadUsada).append("\n");
+
+        ticket.append("Horas trabajadas: ")
+                .append(horasTrabajadas).append("\n");
+
+        ticket.append("---------------------------------\n");
+        ticket.append("Estado: ")
+                .append(orden.getEstadoOrden()).append("\n");
+
+        ticket.append("TOTAL A COBRAR: $")
+                .append(total).append("\n");
+
+        ticket.append("=================================\n");
 
         return ticket.toString();
     }
 
-    public OrdenDeTrabajo buscarOrdenPorId(int idOrden) throws AccionInvalidaEx, SQLException {
-        OrdenDeTrabajo orden = DBHandler.getOrdenDeTrabajoPorID(idOrden);
+    public OrdenDeTrabajo buscarOrdenPorId(int idOrden)
+            throws AccionInvalidaEx, SQLException {
 
-        if(orden == null){
-            throw new AccionInvalidaEx("No existe orden con ese id");
+        OrdenDeTrabajo orden = DBHandler.getOrdenDeTrabajoPorID(
+                idOrden
+        );
+
+        if (orden == null) {
+            throw new AccionInvalidaEx(
+                    "No existe orden con ese id"
+            );
         }
 
         return orden;
     }
 
-    // ===============================================================================================================================/OBTENER LISTADOS/
+    // OBTENER ORDENES ACTIVAS
 
+    public ArrayList<OrdenDeTrabajo> obtenerOrdenesActivas()
+            throws SQLException, AccionInvalidaEx {
 
-    public ArrayList<Cliente> obtenerClientes() throws SQLException, AccionInvalidaEx {
-        return new ArrayList<>(DBHandler.obtenerTodosLosClientes().values());
+        return DBHandler.obtenerOrdenesActivas();
     }
 
-    public ArrayList<Mecanico> obtenerMecanicos() throws SQLException, AccionInvalidaEx {
-        return new ArrayList<>(DBHandler.obtenerTodosLosMecanicos().values());
+    // =========================================================
+    // OBTENER LISTADOS
+    // =========================================================
+
+    public ArrayList<Cliente> obtenerClientes()
+            throws SQLException, AccionInvalidaEx {
+
+        return new ArrayList<>(
+                DBHandler.obtenerTodosLosClientes().values()
+        );
     }
 
-    public ArrayList<Modelo> obtenerModelos() throws SQLException {
-        return new ArrayList<>(DBHandler.obtenerTodosLosModelos().values());
+    public ArrayList<Mecanico> obtenerMecanicos()
+            throws SQLException, AccionInvalidaEx {
+
+        return new ArrayList<>(
+                DBHandler.obtenerTodosLosMecanicos().values()
+        );
     }
 
-    public ArrayList<Vehiculo> obtenerVehiculos() throws SQLException, AccionInvalidaEx {
-        return new ArrayList<>(DBHandler.obtenerTodosLosVehiculos().values());
+    public ArrayList<Modelo> obtenerModelos()
+            throws SQLException {
+
+        return new ArrayList<>(
+                DBHandler.obtenerTodosLosModelos().values()
+        );
     }
 
-    public ArrayList<Repuesto> obtenerRepuestos() throws SQLException, AccionInvalidaEx {
-        return new ArrayList<>(DBHandler.obtenerTodosLosRepuestos().values());
+    public ArrayList<Vehiculo> obtenerVehiculos()
+            throws SQLException, AccionInvalidaEx {
+
+        return new ArrayList<>(
+                DBHandler.obtenerTodosLosVehiculos().values()
+        );
     }
 
+    public ArrayList<Repuesto> obtenerRepuestos()
+            throws SQLException, AccionInvalidaEx {
 
+        return new ArrayList<>(
+                DBHandler.obtenerTodosLosRepuestos().values()
+        );
+    }
 }
