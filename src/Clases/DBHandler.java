@@ -762,6 +762,39 @@ public class DBHandler {
         return ordenes;
     }
 
+    //Diagnostico
 
+    public static int actualizarDiagnosticoOrden(int idOrden, String nuevaDescripcion, EstadoOrden estado) throws SQLException {
+        String sql = "UPDATE ordenes_trabajo SET descripcion = ?, estado = ? WHERE id_orden = ?";
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, nuevaDescripcion);
+            ps.setString(2, String.valueOf(estado));
+            ps.setInt(3, idOrden);
+            return ps.executeUpdate();
+        }
+    }
 
+    public static int guardarDetalleOrden(int idOrden, int idRepuesto, int cantidad) throws SQLException {
+        String sql = "INSERT INTO detalles_orden(id_orden, id_repuesto, cantidad) VALUES (?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, idOrden);
+            ps.setInt(2, idRepuesto);
+            ps.setInt(3, cantidad);
+            return ps.executeUpdate();
+        }
+    }
+
+    public static int finalizarOrdenEnBD(int idOrden, EstadoOrden estado, double horasTrabajadas) throws SQLException {
+        String sql = "UPDATE ordenes_trabajo SET estado = ?, horas_trabajadas = ? WHERE id_orden = ?";
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, String.valueOf(estado));
+            ps.setDouble(2, horasTrabajadas);
+            ps.setInt(3, idOrden);
+            return ps.executeUpdate();
+        }
+    }
 }
+

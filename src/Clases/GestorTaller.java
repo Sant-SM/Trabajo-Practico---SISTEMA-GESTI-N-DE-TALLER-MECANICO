@@ -569,13 +569,12 @@ public class GestorTaller {
                 0, descProblema, vehiculo, mecanico
         );
 
+        orden.registrarDiagnostico("Reparacion directa en taller");
         orden.agregarRepuesto(repuestoUsado, cantidadUsada);
-
         orden.finalizarOrden(horasTrabajadas);
 
         double total = orden.calcularTotal();
 
-        // Primero actualizamos el stock en la base de datos.
         boolean stockActualizado = DBHandler.actualizarStockRepuesto(
                 repuestoUsado.getIdRepuesto(),
                 repuestoUsado.getStock()
@@ -583,19 +582,14 @@ public class GestorTaller {
 
         if (!stockActualizado) {
             repuestoUsado.setStock(stockAnterior);
-
-            throw new AccionInvalidaEx(
-                    "No se pudo actualizar el stock"
-            );
+            throw new AccionInvalidaEx("No se pudo actualizar el stock");
         }
 
         int idGenerado;
 
         try {
-
-            // SQLite genera el ID automaticamente.
             idGenerado = DBHandler.guardarOrdenDeTrabajo(
-                    descProblema,
+                    orden.getDescripcionProblema(),
                     orden.getEstadoOrden(),
                     horasTrabajadas,
                     vehiculo.getPatente(),
@@ -603,21 +597,17 @@ public class GestorTaller {
             );
 
             if (idGenerado <= 0) {
-                throw new AccionInvalidaEx(
-                        "No se pudo guardar la orden"
-                );
+                throw new AccionInvalidaEx("No se pudo guardar la orden");
             }
 
+            DBHandler.guardarDetalleOrden(idGenerado, idRepuestoUsado, cantidadUsada);
+
         } catch (SQLException | AccionInvalidaEx ex) {
-
-            // Si falla el guardado, restauramos el stock.
             repuestoUsado.setStock(stockAnterior);
-
             DBHandler.actualizarStockRepuesto(
                     repuestoUsado.getIdRepuesto(),
                     stockAnterior
             );
-
             throw ex;
         }
 
@@ -671,6 +661,98 @@ public class GestorTaller {
         }
 
         return orden;
+    }
+
+    public String ingresarAutoATaller(String patente, String dniMecanico, String motivoIngreso) throws AccionInvalidaEx, SQLException {
+
+        Vehiculo vehiculo = buscarVehiculoPorPatente(patente);
+        Mecanico mecanico = buscarMecanicoPorDni(dniMecanico);
+
+        OrdenDeTrabajo nuevaOrden = new OrdenDeTrabajo(0, motivoIngreso, vehiculo, mecanico);
+
+        int idGenerado = DBHandler.guardarOrdenDeTrabajo(
+                nuevaOrden.getDescripcionProblema(),
+                nuevaOrden.getEstadoOrden(),
+                0.0,
+                vehiculo.getPatente(),
+                mecanico.getDni()
+        );
+
+        if (idGenerado <= 0) {
+            throw new AccionInvalidaEx("No se pudo registrar el ingreso del vehiculo al taller");
+        }
+
+        return "EXITO: Vehiculo ingresado. Orden N: " + idGenerado + " abierta en estado PENDIENTE.";
+    }
+
+    public String registrarDiagnosticoOrden(int idOrden, String diagnostico) throws AccionInvalidaEx, OrdenInvalidaException, SQLException {
+
+        OrdenDeTrabajo orden = buscarOrdenPorId(idOrden);
+        orden.registrarDiagnostico(diagnostico);
+
+        int filas = DBHandler.actualizarDiagnosticoOrden(
+                idOrden,
+                orden.getDescripcionProblema(),
+                orden.getEstadoOrden()
+        );
+
+        if (filas != 1) {
+            throw new AccionInvalidaEx("No se pudo actualizar el diagnostico en la base de datos");
+        }
+
+        return "EXITO: Diagnostico cargado. La orden N: " + idOrden + " paso a EN_PROCESO.";
+    }
+
+    public String agregarRepuestoAOrden(int idOrden, int idRepuesto, int cantidad) throws AccionInvalidaEx, OrdenInvalidaException, StockInsuficienteException, SQLException {
+
+        OrdenDeTrabajo orden = buscarOrdenPorId(idOrden);
+        Repuesto repuesto = obtenerRepuestoPorID(idRepuesto);
+        int stockAnterior = repuesto.getStock();
+
+        orden.agregarRepuesto(repuesto, cantidad);
+
+        if (!DBHandler.actualizarStockRepuesto(idRepuesto, repuesto.getStock())) {
+            repuesto.setStock(stockAnterior);
+            throw new AccionInvalidaEx("No se pudo actualizar el stock del repuesto");
+        }
+
+        try {
+            DBHandler.guardarDetalleOrden(idOrden, idRepuesto, cantidad);
+            DBHandler.actualizarDiagnosticoOrden(idOrden, orden.getDescripcionProblema(), orden.getEstadoOrden());
+        } catch (SQLException ex) {
+            repuesto.setStock(stockAnterior);
+            DBHandler.actualizarStockRepuesto(idRepuesto, stockAnterior);
+            throw ex;
+        }
+
+        return "EXITO: Se agrego " + repuesto.getNombre() + " (x" + cantidad + ") a la orden N: " + idOrden;
+    }
+
+    public String finalizarYFacturarOrden(int idOrden, double horasTrabajadas)
+            throws AccionInvalidaEx, OrdenInvalidaException, SQLException {
+
+        OrdenDeTrabajo orden = buscarOrdenPorId(idOrden);
+        orden.finalizarOrden(horasTrabajadas);
+
+        int filas = DBHandler.finalizarOrdenEnBD(idOrden, orden.getEstadoOrden(), horasTrabajadas);
+        if (filas != 1) {
+            throw new AccionInvalidaEx("No se pudo finalizar la orden en la base de datos");
+        }
+
+        StringBuilder ticket = new StringBuilder();
+        ticket.append("\n=================================\n");
+        ticket.append("     COMPROBANTE DE REPARACION\n");
+        ticket.append("=================================\n");
+        ticket.append("Orden N: ").append(idOrden).append("\n");
+        ticket.append("Vehiculo: ").append(orden.getVehiculo().getPatente()).append("\n");
+        ticket.append("Mecanico: ").append(orden.getMecanico().getNombre()).append("\n");
+        ticket.append("Detalle: ").append(orden.getDescripcionProblema()).append("\n");
+        ticket.append("Horas trabajadas: ").append(horasTrabajadas).append("\n");
+        ticket.append("Estado: ").append(orden.getEstadoOrden()).append("\n");
+        ticket.append("TOTAL A COBRAR: $").append(orden.calcularTotal()).append("\n");
+        ticket.append("=================================\n");
+
+        return ticket.toString();
     }
 
     // OBTENER ORDENES ACTIVAS

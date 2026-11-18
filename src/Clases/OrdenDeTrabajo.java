@@ -20,8 +20,7 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
     private Vehiculo vehiculo;
     private Mecanico mecanico;
 
-    public OrdenDeTrabajo(int idOrden, String descripcionProblema,
-                          Vehiculo vehiculo, Mecanico mecanico) throws AccionInvalidaEx {
+    public OrdenDeTrabajo(int idOrden, String descripcionProblema, Vehiculo vehiculo, Mecanico mecanico) throws AccionInvalidaEx {
 
         if (descripcionProblema == null) {
             throw new AccionInvalidaEx("Descripcion vacia");
@@ -118,28 +117,40 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
         return idOrden;
     }
 
-    public void agregarRepuesto(Repuesto repuesto, int cantidad)
-            throws OrdenInvalidaException, StockInsuficienteException, AccionInvalidaEx {
+    public void agregarRepuesto(Repuesto repuesto, int cantidad) throws OrdenInvalidaException, StockInsuficienteException, AccionInvalidaEx {
 
         if (estadoOrden == EstadoOrden.FINALIZADA ||
                 estadoOrden == EstadoOrden.CANCELADA) {
             throw new OrdenInvalidaException("La orden ya esta cerrada");
         }
 
+        if (estadoOrden != EstadoOrden.EN_PROCESO) {
+            throw new OrdenInvalidaException("La orden debe tener un diagnostico cargado (EN_PROCESO) antes de agregar repuestos");
+        }
+
         if (repuesto == null) {
             throw new AccionInvalidaEx("Repuesto invalido");
         }
 
-        // Primero se crea el detalle y despues se descuenta el stock.
         DetalleOrden nuevoDetalle = new DetalleOrden(repuesto, cantidad);
 
         repuesto.descontarStock(cantidad);
 
         detallesOrden.add(nuevoDetalle);
+    }
 
-        if (estadoOrden == EstadoOrden.PENDIENTE) {
-            estadoOrden = EstadoOrden.EN_PROCESO;
+    public void registrarDiagnostico(String diagnostico) throws OrdenInvalidaException, AccionInvalidaEx {
+
+        if (estadoOrden != EstadoOrden.PENDIENTE) {
+            throw new OrdenInvalidaException("Solo se puede diagnosticar una orden en estado PENDIENTE");
         }
+
+        if (diagnostico == null || diagnostico.trim().isEmpty()) {
+            throw new AccionInvalidaEx("El diagnostico no puede estar vacio");
+        }
+
+        this.descripcionProblema = this.descripcionProblema + " | Diagnostico: " + diagnostico;
+        this.estadoOrden = EstadoOrden.EN_PROCESO;
     }
 
     public void finalizarOrden(double horasTotales)
