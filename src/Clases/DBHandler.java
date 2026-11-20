@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class DBHandler {
 
-    private final static String url = "jdbc:sqlite:taller_mecanico.db";
+    private final static String url = "jdbc:sqlite:taller_mecanico.db?foreign_keys=on";
 
     public static boolean conectar() throws SQLException {
         try (Connection connection = DriverManager.getConnection(url)) {
@@ -537,10 +537,10 @@ public class DBHandler {
                     }
 
                     buscado = new OrdenDeTrabajo(id_orden, descripcion, horasTrabajadas, estado, vehiculo, mecanico);
+                    buscado.setDetallesOrden(getDetallesDeOrden(id_orden));
                 }
             }
         }
-
         return buscado;
     }
 
@@ -782,7 +782,8 @@ public class DBHandler {
     }
 
     public static int guardarDetalleOrden(int idOrden, int idRepuesto, int cantidad) throws SQLException {
-        String sql = "INSERT INTO detalles_orden(id_orden, id_repuesto, cantidad) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO detalles_orden(id_orden, id_repuesto, cantidad) VALUES (?, ?, ?)"  +
+                " ON CONFLICT(id_orden, id_repuesto) DO UPDATE SET cantidad = cantidad + excluded.cantidad";
         try (Connection connection = DriverManager.getConnection(url);
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, idOrden);
@@ -802,5 +803,36 @@ public class DBHandler {
             return ps.executeUpdate();
         }
     }
+
+    public static ArrayList<DetalleOrden> getDetallesDeOrden(int idOrden) throws SQLException {
+
+        ArrayList<DetalleOrden> detalles = new ArrayList<>();
+
+        String sql = "SELECT r.id_repuesto, r.nombre, r.precio, r.stock, d.cantidad " +
+                "FROM detalles_orden d " +
+                "JOIN repuestos r ON r.id_repuesto = d.id_repuesto " +
+                "WHERE d.id_orden = ?";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, idOrden);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Repuesto r = new Repuesto(
+                            rs.getInt("id_repuesto"),
+                            rs.getString("nombre"),
+                            rs.getDouble("precio"),
+                            rs.getInt("stock"));
+
+                    detalles.add(DetalleOrden.reconstruir(r, rs.getInt("cantidad")));
+                }
+            }
+        }
+        return detalles;
+    }
+
+
 }
 

@@ -195,8 +195,22 @@ public class OrdenDeTrabajo implements Iidentificable<Integer>, Ifacturable {
                 "\nEstado: " + estadoOrden +
                 "\nVehiculo: " + vehiculo.getPatente() +
                 "\nMecanico: " + mecanico.getNombre() +
+                "\n"+ detalleRepuestos() +
                 "\nHoras trabajadas: " + horasTrabajadas +
                 "\nTotal: $" + calcularTotal();
+    }
+
+    public String detalleRepuestos() {
+        if (detallesOrden.isEmpty()) {
+            return "  (sin repuestos)\n";
+        }
+        StringBuilder detalle = new StringBuilder();
+        for (DetalleOrden d : detallesOrden) {
+            detalle.append("  - ").append(d.getRepuesto().getNombre())
+                    .append(" x").append(d.getCantidad())
+                    .append(" = $").append(d.calcularTotal()).append("\n");
+        }
+        return detalle.toString();
     }
 }
 

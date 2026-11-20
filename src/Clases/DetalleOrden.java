@@ -26,6 +26,15 @@ public class DetalleOrden implements Ifacturable {
         this.cantidad = cantidad;
     }
 
+    private DetalleOrden(Repuesto repuesto, int cantidad, boolean desdeBD) {
+        this.repuesto = repuesto;
+        this.cantidad = cantidad;
+    }
+
+    public static DetalleOrden reconstruir(Repuesto repuesto, int cantidad) {
+        return new DetalleOrden(repuesto, cantidad, true);
+    }
+
     public Repuesto getRepuesto() {
         return repuesto;
     }
@@ -42,4 +51,5 @@ public class DetalleOrden implements Ifacturable {
     public double calcularTotal() {
         return this.repuesto.getPrecio() * this.cantidad;
     }
+
 }

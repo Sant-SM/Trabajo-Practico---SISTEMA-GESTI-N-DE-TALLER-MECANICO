@@ -21,6 +21,7 @@ public class GestorTaller {
 
     public GestorTaller() throws SQLException, AccionInvalidaEx {
 
+        //DBHandler.crearTablas();
         this.db = new DBHandler();
 
         this.cacheClientes = new CacheMemoria<>();
@@ -581,9 +582,14 @@ public class GestorTaller {
                 0, descProblema, vehiculo, mecanico
         );
 
-        orden.registrarDiagnostico("Reparacion directa en taller");
-        orden.agregarRepuesto(repuestoUsado, cantidadUsada);
-        orden.finalizarOrden(horasTrabajadas);
+        try {
+            orden.registrarDiagnostico("Reparacion directa en taller");
+            orden.agregarRepuesto(repuestoUsado, cantidadUsada);
+            orden.finalizarOrden(horasTrabajadas);
+        } catch (OrdenInvalidaException | StockInsuficienteException | AccionInvalidaEx ex) {
+            repuestoUsado.setStock(stockAnterior);
+            throw ex;
+        }
 
         double total = orden.calcularTotal();
 
@@ -759,6 +765,7 @@ public class GestorTaller {
         ticket.append("Vehiculo: ").append(orden.getVehiculo().getPatente()).append("\n");
         ticket.append("Mecanico: ").append(orden.getMecanico().getNombre()).append("\n");
         ticket.append("Detalle: ").append(orden.getDescripcionProblema()).append("\n");
+        ticket.append("Repuestos utilizados:\n").append(orden.detalleRepuestos());
         ticket.append("Horas trabajadas: ").append(horasTrabajadas).append("\n");
         ticket.append("Estado: ").append(orden.getEstadoOrden()).append("\n");
         ticket.append("TOTAL A COBRAR: $").append(orden.calcularTotal()).append("\n");
