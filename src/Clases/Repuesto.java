@@ -76,5 +76,13 @@ public class Repuesto implements Iidentificable <Integer> {
         this.stock -= cantidadUsada;
     }
 
-
+    @Override
+    public String toString() {
+        return "Repuesto{" +
+                "IdRespuesto= " + this.idRepuesto + '\'' +
+                ", nombre= " + this.nombre + '\'' +
+                ", precio= "+ this.precio + '\'' +
+                ", stock= "+ this.stock + '\''+
+                "}";
+    }
 }

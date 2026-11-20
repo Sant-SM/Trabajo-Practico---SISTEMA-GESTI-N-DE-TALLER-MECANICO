@@ -66,6 +66,12 @@ public class GestorTaller {
                                         String email)
             throws AccionInvalidaEx, SQLException {
 
+        int comprobar = Integer.valueOf(dni);
+
+        if(comprobar < 0){
+            throw new AccionInvalidaEx("Dni no puede ser negativo");
+        }
+
         Cliente nuevoCliente = new Cliente(
                 dni, nombre, apellido, telefono, email
         );
@@ -187,6 +193,12 @@ public class GestorTaller {
                                          String apellido, String telefono,
                                          String especialidad, double salario)
             throws AccionInvalidaEx, SQLException {
+
+        int comprobar = Integer.valueOf(dni);
+
+        if(comprobar < 0){
+            throw new AccionInvalidaEx("Dni no puede ser negativo");
+        }
 
         Mecanico nuevoMecanico = new Mecanico(
                 dni, nombre, apellido, telefono, especialidad, salario

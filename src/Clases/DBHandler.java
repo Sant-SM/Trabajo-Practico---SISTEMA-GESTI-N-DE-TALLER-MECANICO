@@ -188,7 +188,7 @@ public class DBHandler {
             ps.setString(1, nombre);
             ps.setDouble(2, precio);
             ps.setInt(3, stock);
-            ps.executeQuery();
+            ps.executeUpdate();
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 while (rs.next()) {
@@ -202,21 +202,27 @@ public class DBHandler {
     //GUARDAR MODELO
     public static int guardarModelo(String marca, String linea, int anio) throws SQLException {
 
-        int filasAfectadas = 0;
+        int idAgregado = -1;
 
         String sqlAddModelo = "INSERT INTO modelos(marca, linea, anio) VALUES (?, ?, ?)";
 
         try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement ps = connection.prepareStatement(sqlAddModelo)) {
+             PreparedStatement ps = connection.prepareStatement(sqlAddModelo, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, marca);
             ps.setString(2, linea);
             ps.setInt(3, anio);
 
-            filasAfectadas = ps.executeUpdate();
+            ps.executeUpdate();
+
+            try(ResultSet rs = ps.getGeneratedKeys()){
+                while(rs.next()){
+                    idAgregado = rs.getInt(1);
+                }
+            }
         }
 
-        return filasAfectadas;
+        return idAgregado;
     }
 
     //GUARDAR MODELO
