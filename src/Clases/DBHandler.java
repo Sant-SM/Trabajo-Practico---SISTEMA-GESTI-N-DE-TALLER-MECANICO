@@ -503,6 +503,35 @@ public class DBHandler {
         return buscado;
     }
 
+    // OBTENER TODAS LAS ORDENES (activas, finalizadas y canceladas)
+    public static ArrayList<OrdenDeTrabajo> obtenerTodasLasOrdenes()
+            throws SQLException, AccionInvalidaEx {
+
+        ArrayList<Integer> ids = new ArrayList<>();
+        ArrayList<OrdenDeTrabajo> ordenes = new ArrayList<>();
+
+        String sql = "SELECT id_orden FROM ordenes_trabajo ORDER BY id_orden";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                ids.add(rs.getInt("id_orden"));
+            }
+        }
+
+        for (Integer id : ids) {
+            OrdenDeTrabajo orden = getOrdenDeTrabajoPorID(id);
+
+            if (orden != null) {
+                ordenes.add(orden);
+            }
+        }
+
+        return ordenes;
+    }
+
     //OBTENER ORDEN DE TRABAJO POR ID
     public static OrdenDeTrabajo getOrdenDeTrabajoPorID(int id) throws SQLException, AccionInvalidaEx {
 
@@ -544,6 +573,31 @@ public class DBHandler {
         return buscado;
     }
 
+
+    private static int contar(String sql, String valor) throws SQLException {
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setString(1, valor);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
+
+    public static boolean clienteTieneVehiculos(String dni) throws SQLException {
+        return contar("SELECT COUNT(*) FROM vehiculos WHERE dni = ?", dni) > 0;
+    }
+
+    public static boolean vehiculoTieneOrdenes(String patente) throws SQLException {
+        return contar("SELECT COUNT(*) FROM ordenes_trabajo WHERE patente = ?", patente) > 0;
+    }
+
+    public static boolean mecanicoTieneOrdenes(String dni) throws SQLException {
+        return contar("SELECT COUNT(*) FROM ordenes_trabajo WHERE dni_mecanico = ?", dni) > 0;
+    }
+
     //ELIMINAR CLIENTE
     public static int eliminarCliente(String dni) throws SQLException {
 
@@ -564,18 +618,35 @@ public class DBHandler {
     //ELIMINAR VEHICULO
     public static int eliminarVehiculo(String patente) throws SQLException {
 
-        int filasAfectadas = 0;
+        try (Connection connection = DriverManager.getConnection(url)) {
+            connection.setAutoCommit(false);
 
-        String sqlDeleteVehiculo = "DELETE FROM vehiculos WHERE patente = ?";
+            try {
+                ejecutar(connection, "DELETE FROM detalles_orden WHERE id_orden IN " +
+                        "(SELECT id_orden FROM ordenes_trabajo WHERE patente = ?)", patente);
+                ejecutar(connection, "DELETE FROM ordenes_trabajo WHERE patente = ?", patente);
+                int filas = ejecutar(connection, "DELETE FROM vehiculos WHERE patente = ?", patente);
 
-        try (Connection connection = DriverManager.getConnection(url);
-             PreparedStatement ps = connection.prepareStatement(sqlDeleteVehiculo)) {
+                connection.commit();
+                return filas;
 
-            ps.setString(1, patente);
-            filasAfectadas = ps.executeUpdate();
+            } catch (SQLException ex) {
+                connection.rollback();
+                throw ex;
+            }
         }
+    }
 
-        return filasAfectadas;
+    private static int ejecutar(Connection connection, String sql, String valor) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, valor);
+            return ps.executeUpdate();
+        }
+    }
+
+    public static boolean vehiculoTieneOrdenesActivas(String patente) throws SQLException {
+        return contar("SELECT COUNT(*) FROM ordenes_trabajo " +
+                "WHERE patente = ? AND estado IN ('PENDIENTE', 'EN_PROCESO')", patente) > 0;
     }
 
     //ELIMINAR MECANICO
@@ -593,6 +664,34 @@ public class DBHandler {
         }
 
         return filasAfectadas;
+    }
+
+    public static boolean modeloTieneVehiculos(int idModelo) throws SQLException {
+
+        String sql = "SELECT COUNT(*) FROM vehiculos WHERE id_modelo = ?";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, idModelo);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
+
+    //ELIMINAR MODELO
+    public static int eliminarModelo(int idModelo) throws SQLException {
+
+        String sql = "DELETE FROM modelos WHERE id_modelo = ?";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, idModelo);
+            return ps.executeUpdate();
+        }
     }
 
 
@@ -650,6 +749,34 @@ public class DBHandler {
         }
 
         return mecanicos;
+    }
+
+    public static boolean repuestoUsadoEnOrdenes(int idRepuesto) throws SQLException {
+
+        String sql = "SELECT COUNT(*) FROM detalles_orden WHERE id_repuesto = ?";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, idRepuesto);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
+
+    //ELIMINAR REPUESTO
+    public static int eliminarRepuesto(int idRepuesto) throws SQLException {
+
+        String sql = "DELETE FROM repuestos WHERE id_repuesto = ?";
+
+        try (Connection connection = DriverManager.getConnection(url);
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            ps.setInt(1, idRepuesto);
+            return ps.executeUpdate();
+        }
     }
 
 

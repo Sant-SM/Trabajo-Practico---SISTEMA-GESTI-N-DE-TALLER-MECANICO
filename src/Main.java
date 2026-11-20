@@ -1,10 +1,10 @@
-import Clases.GestorTaller;
-import Clases.OrdenDeTrabajo;
+import Clases.*;
 import Exepciones.AccionInvalidaEx;
 import Exepciones.OrdenInvalidaException;
 import Exepciones.StockInsuficienteException;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -113,6 +113,7 @@ public class Main {
                 }
                 case 2: {
                     try {
+                        mostrarDnisClientes(gestor);
                         System.out.print("DNI del cliente: ");
                         System.out.println(gestor.buscarClientePorDni(teclado.nextLine()));
                     } catch (AccionInvalidaEx ex) {
@@ -131,6 +132,7 @@ public class Main {
                 }
                 case 4: {
                     try {
+                        mostrarDnisClientes(gestor);
                         System.out.print("DNI del cliente: ");
                         String dni = teclado.nextLine();
                         System.out.print("Nuevo telefono: ");
@@ -142,6 +144,7 @@ public class Main {
                     break;
                 }
                 case 5: {
+                    mostrarDnisClientes(gestor);
                     try {
                         System.out.print("DNI del cliente: ");
                         System.out.println(gestor.eliminarCliente(teclado.nextLine()));
@@ -151,12 +154,7 @@ public class Main {
                     break;
                 }
                 case 6: {
-                    try {
-                        System.out.println(gestor.imprimirListado(gestor.obtenerClientes()));
-                    } catch (AccionInvalidaEx | SQLException ex) {
-                        System.out.println("Error al listar clientes: " + ex.getMessage());
-                    }
-                    break;
+                   mostrarClientes(gestor);
                 }
                 case 0:
                     break;
@@ -211,6 +209,7 @@ public class Main {
                 }
                 case 2: {
                     try {
+                        mostrarDnisMecanicos(gestor);
                         System.out.print("DNI del mecanico: ");
                         System.out.println(gestor.buscarMecanicoPorDni(teclado.nextLine()));
                     } catch (AccionInvalidaEx ex) {
@@ -220,6 +219,7 @@ public class Main {
                 }
                 case 3: {
                     try {
+                        mostrarDnisMecanicos(gestor);
                         System.out.print("Nombre a buscar: ");
                         System.out.println(gestor.imprimirListado(gestor.buscarMecanicosPorNombre(teclado.nextLine())));
                     } catch (AccionInvalidaEx | SQLException ex) {
@@ -229,6 +229,7 @@ public class Main {
                 }
                 case 4: {
                     try {
+                        mostrarDnisMecanicos(gestor);
                         System.out.print("DNI del mecanico: ");
                         String dni = teclado.nextLine();
                         System.out.print("Nuevo salario por hora: ");
@@ -243,6 +244,7 @@ public class Main {
                 }
                 case 5: {
                     try {
+                        mostrarDnisMecanicos(gestor);
                         System.out.print("DNI del mecanico: ");
                         System.out.println(gestor.eliminarMecanico(teclado.nextLine()));
                     } catch (AccionInvalidaEx | SQLException ex) {
@@ -272,11 +274,12 @@ public class Main {
             System.out.println("\n--- GESTION DE MODELOS Y VEHICULOS ---");
             System.out.println("1. Registrar modelo");
             System.out.println("2. Listar modelos");
-            System.out.println("3. Registrar vehiculo");
-            System.out.println("4. Buscar vehiculo por patente");
-            System.out.println("5. Actualizar kilometraje");
-            System.out.println("6. Eliminar vehiculo");
-            System.out.println("7. Listar todos los vehiculos");
+            System.out.println("3. Eliminar modelo");
+            System.out.println("4. Registrar vehiculo");
+            System.out.println("5. Buscar vehiculo por patente");
+            System.out.println("6. Actualizar kilometraje");
+            System.out.println("7. Eliminar vehiculo");
+            System.out.println("8. Listar todos los vehiculos");
             System.out.println("0. Volver al menu principal");
             System.out.print("Opcion: ");
 
@@ -306,13 +309,17 @@ public class Main {
                 }
                 case 2: {
                     try {
+                        mostrarIdsModelos(gestor);
                         System.out.println(gestor.imprimirListado(gestor.obtenerModelos()));
                     } catch (SQLException ex) {
                         System.out.println("Error al listar modelos: " + ex.getMessage());
                     }
                     break;
                 }
-                case 3: {
+                case 3:
+                    eliminarModelo(teclado, gestor);
+                    break;
+                case 4: {
                     try {
                         System.out.print("Patente: ");
                         String patente = teclado.nextLine();
@@ -336,8 +343,9 @@ public class Main {
                     }
                     break;
                 }
-                case 4: {
+                case 5: {
                     try {
+                        mostrarPatentesVehiculos(gestor);
                         System.out.print("Patente: ");
                         System.out.println(gestor.buscarVehiculoPorPatente(teclado.nextLine()));
                     } catch (AccionInvalidaEx ex) {
@@ -345,8 +353,9 @@ public class Main {
                     }
                     break;
                 }
-                case 5: {
+                case 6: {
                     try {
+                        mostrarPatentesVehiculos(gestor);
                         System.out.print("Patente: ");
                         String patente = teclado.nextLine();
                         System.out.print("Nuevo kilometraje: ");
@@ -359,8 +368,9 @@ public class Main {
                     }
                     break;
                 }
-                case 6: {
+                case 7: {
                     try {
+                        mostrarPatentesVehiculos(gestor);
                         System.out.print("Patente: ");
                         System.out.println(gestor.eliminarVehiculo(teclado.nextLine()));
                     } catch (AccionInvalidaEx | SQLException ex) {
@@ -368,7 +378,7 @@ public class Main {
                     }
                     break;
                 }
-                case 7: {
+                case 8: {
                     try {
                         System.out.println(gestor.imprimirListado(gestor.obtenerVehiculos()));
                     } catch (AccionInvalidaEx | SQLException ex) {
@@ -393,6 +403,7 @@ public class Main {
             System.out.println("3. Buscar repuestos por nombre");
             System.out.println("4. Ingresar stock");
             System.out.println("5. Listar todos los repuestos");
+            System.out.println("6. Eliminar repuesto");
             System.out.println("0. Volver al menu principal");
             System.out.print("Opcion: ");
 
@@ -422,6 +433,7 @@ public class Main {
                 }
                 case 2: {
                     try {
+                        mostrarIdsRepuestos(gestor);
                         System.out.print("ID del repuesto: ");
                         System.out.println(gestor.obtenerRepuestoPorID(Integer.parseInt(teclado.nextLine())));
                     } catch (AccionInvalidaEx ex) {
@@ -442,6 +454,7 @@ public class Main {
                 }
                 case 4: {
                     try {
+                        mostrarIdsRepuestos(gestor);
                         System.out.print("ID del repuesto: ");
                         int idRepuesto = Integer.parseInt(teclado.nextLine());
                         System.out.print("Cantidad a ingresar: ");
@@ -462,6 +475,9 @@ public class Main {
                     }
                     break;
                 }
+                case 6:
+                    eliminarRepuesto(teclado, gestor);
+                    break;
                 case 0:
                     break;
                 default:
@@ -481,6 +497,7 @@ public class Main {
             System.out.println("5. Reparacion rapida (Ingreso, repuesto y facturacion directa)");
             System.out.println("6. Buscar orden por ID");
             System.out.println("7. Ver ordenes activas (Pendientes / En proceso)");
+            System.out.println("8. Ver historial de todas las ordenes");
             System.out.println("0. Volver al menu principal");
             System.out.print("Opcion: ");
 
@@ -601,6 +618,9 @@ public class Main {
                     }
                     break;
                 }
+                case 8:
+                    mostrarTodasLasOrdenes(gestor);
+                    break;
                 case 0:
                     break;
                 default:
@@ -625,6 +645,153 @@ public class Main {
             System.out.println(gestor.imprimirListado(gestor.obtenerOrdenesActivas()));
         } catch (AccionInvalidaEx | SQLException ex) {
             System.out.println("Error al mostrar reporte general: " + ex.getMessage());
+        }
+    }
+
+    public static void mostrarClientes(GestorTaller gestor) {
+        try {
+            System.out.println(gestor.imprimirListado(gestor.obtenerClientes()));
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al listar clientes: " + ex.getMessage());
+        }
+    }
+
+    private static void mostrarDnisClientes(GestorTaller gestor) {
+        try {
+            ArrayList<Cliente> clientes = gestor.obtenerClientes();
+
+            if (clientes.isEmpty()) {
+                System.out.println("No hay clientes registrados.");
+                return;
+            }
+
+            System.out.println("\n--- DNI de clientes ---");
+            for (Cliente c : clientes) {
+                System.out.println(c.getDni());
+            }
+            System.out.println("\n");
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al listar clientes: " + ex.getMessage());
+        }
+    }
+
+    private static void mostrarDnisMecanicos(GestorTaller gestor) {
+        try {
+            ArrayList<Mecanico> mecanicos = gestor.obtenerMecanicos();
+
+            if (mecanicos.isEmpty()) {
+                System.out.println("No hay clientes registrados.");
+                return;
+            }
+
+            System.out.println("\n--- DNI de clientes ---");
+            for (Mecanico c : mecanicos) {
+                System.out.println(c.getDni());
+            }
+            System.out.println("\n");
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al listar clientes: " + ex.getMessage());
+        }
+    }
+
+    private static void mostrarIdsModelos(GestorTaller gestor) {
+        try {
+            ArrayList<Modelo> modelos = gestor.obtenerModelos();
+
+            if (modelos.isEmpty()) {
+                System.out.println("No hay modelos registrados.");
+                return;
+            }
+
+            System.out.println("\n--- ID de modelos ---");
+            for (Modelo m : modelos) {
+                System.out.println(m.getId());
+            }
+        } catch (SQLException ex) {
+            System.out.println("Error al listar modelos: " + ex.getMessage());
+        }
+    }
+
+    private static void mostrarPatentesVehiculos(GestorTaller gestor) {
+        try {
+            ArrayList<Vehiculo> vehiculos = gestor.obtenerVehiculos();
+
+            if (vehiculos.isEmpty()) {
+                System.out.println("No hay vehiculos registrados.");
+                return;
+            }
+
+            System.out.println("\n--- Patentes de vehiculos ---");
+            for (Vehiculo v : vehiculos) {
+                System.out.println(v.getPatente());
+            }
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al listar vehiculos: " + ex.getMessage());
+        }
+    }
+
+    private static void mostrarIdsRepuestos(GestorTaller gestor) {
+        try {
+            ArrayList<Repuesto> repuestos = gestor.obtenerRepuestos();
+
+            if (repuestos.isEmpty()) {
+                System.out.println("No hay repuestos registrados.");
+                return;
+            }
+
+            System.out.println("\n--- ID de repuestos ---");
+            for (Repuesto r : repuestos) {
+                System.out.println(r.getIdRepuesto());
+            }
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al listar repuestos: " + ex.getMessage());
+        }
+    }
+
+
+    private static void eliminarRepuesto(Scanner teclado, GestorTaller gestor) {
+        mostrarIdsRepuestos(gestor);
+
+        try {
+            System.out.print("ID del repuesto a eliminar: ");
+            int id = Integer.parseInt(teclado.nextLine());
+
+            System.out.println(gestor.eliminarRepuesto(id));
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al eliminar repuesto: " + ex.getMessage());
+        } catch (NumberFormatException ex) {
+            System.out.println("Error: El ID debe ser numerico.");
+        }
+    }
+
+    private static void eliminarModelo(Scanner teclado, GestorTaller gestor) {
+        mostrarIdsModelos(gestor);
+
+        try {
+            System.out.print("ID del modelo a eliminar: ");
+            int id = Integer.parseInt(teclado.nextLine());
+
+            System.out.println(gestor.eliminarModelo(id));
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al eliminar modelo: " + ex.getMessage());
+        } catch (NumberFormatException ex) {
+            System.out.println("Error: El ID debe ser numerico.");
+        }
+    }
+
+    private static void mostrarTodasLasOrdenes(GestorTaller gestor) {
+        try {
+            ArrayList<OrdenDeTrabajo> ordenes = gestor.obtenerTodasLasOrdenes();
+
+            if (ordenes.isEmpty()) {
+                System.out.println("No hay ordenes registradas.");
+                return;
+            }
+
+            System.out.println(gestor.imprimirListado(ordenes));
+            System.out.println("Total de ordenes: " + ordenes.size());
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al listar ordenes: " + ex.getMessage());
         }
     }
 }

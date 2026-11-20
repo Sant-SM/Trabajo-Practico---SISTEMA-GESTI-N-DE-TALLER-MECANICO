@@ -67,11 +67,8 @@ public class GestorTaller {
                                         String email)
             throws AccionInvalidaEx, SQLException {
 
-        int comprobar = Integer.valueOf(dni);
 
-        if(comprobar < 0){
-            throw new AccionInvalidaEx("Dni no puede ser negativo");
-        }
+        validarDni(dni);
 
         Cliente nuevoCliente = new Cliente(
                 dni, nombre, apellido, telefono, email
@@ -147,6 +144,10 @@ public class GestorTaller {
             );
         }
 
+        if (DBHandler.clienteTieneVehiculos(dni)) {
+            throw new AccionInvalidaEx("No se puede eliminar el cliente: tiene vehiculos registrados. Elimine primero sus vehiculos.");
+        }
+
         int filasAfectadas = DBHandler.eliminarCliente(dni);
 
         if (filasAfectadas != 1) {
@@ -195,11 +196,8 @@ public class GestorTaller {
                                          String especialidad, double salario)
             throws AccionInvalidaEx, SQLException {
 
-        int comprobar = Integer.valueOf(dni);
 
-        if(comprobar < 0){
-            throw new AccionInvalidaEx("Dni no puede ser negativo");
-        }
+        validarDni(dni);
 
         Mecanico nuevoMecanico = new Mecanico(
                 dni, nombre, apellido, telefono, especialidad, salario
@@ -271,9 +269,11 @@ public class GestorTaller {
             throws AccionInvalidaEx, SQLException {
 
         if (!cacheMecanicos.existe(dni)) {
-            throw new AccionInvalidaEx(
-                    "No existe mecanico con ese dni"
-            );
+            throw new AccionInvalidaEx("No existe mecanico con ese dni");
+        }
+
+        if (DBHandler.mecanicoTieneOrdenes(dni)) {
+            throw new AccionInvalidaEx("No se puede eliminar el mecanico: tiene ordenes de trabajo asociadas.");
         }
 
         int filasAfectadas = DBHandler.eliminarMecanico(dni);
@@ -369,6 +369,10 @@ public class GestorTaller {
             );
         }
 
+        if (DBHandler.vehiculoTieneOrdenesActivas(patente)) {
+            throw new AccionInvalidaEx("No se puede eliminar el vehiculo: tiene ordenes de trabajo asociadas.");
+        }
+
         int filasAfectadas = DBHandler.eliminarVehiculo(patente);
 
         if (filasAfectadas != 1) {
@@ -388,28 +392,29 @@ public class GestorTaller {
             throws AccionInvalidaEx, SQLException {
 
         if (!cacheVehiculos.existe(patente)) {
-            throw new AccionInvalidaEx(
-                    "No existe vehiculo con esa patente"
-            );
+            throw new AccionInvalidaEx("No existe vehiculo con esa patente");
         }
 
         Vehiculo vehiculo = cacheVehiculos.obtener(patente);
+        double kmAnterior = vehiculo.getKilometraje();
 
-        if (nuevoKilometraje < 0) {
-            throw new AccionInvalidaEx("Kilometraje invalido");
+        vehiculo.actualizarKilometraje(nuevoKilometraje);
+
+        int filasAfectadas;
+
+        try {
+            filasAfectadas = DBHandler.actualizarKilometrajeVehiculo(
+                    patente, nuevoKilometraje
+            );
+        } catch (SQLException ex) {
+            vehiculo.setKilometraje(kmAnterior);
+            throw ex;
         }
-
-        int filasAfectadas = DBHandler.actualizarKilometrajeVehiculo(
-                patente, nuevoKilometraje
-        );
 
         if (filasAfectadas != 1) {
-            throw new AccionInvalidaEx(
-                    "No se pudo actualizar kilometraje"
-            );
+            vehiculo.setKilometraje(kmAnterior);
+            throw new AccionInvalidaEx("No se pudo actualizar kilometraje");
         }
-
-        vehiculo.setKilometraje(nuevoKilometraje);
 
         return "Kilometraje actualizado correctamente";
     }
@@ -519,6 +524,31 @@ public class GestorTaller {
         repuesto.setStock(nuevoStock);
 
         return "Stock actualizado correctamente";
+    }
+
+    public String eliminarRepuesto(int idRepuesto)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheRepuestos.existe(idRepuesto)) {
+            throw new AccionInvalidaEx("No existe repuesto con ese id");
+        }
+
+        if (DBHandler.repuestoUsadoEnOrdenes(idRepuesto)) {
+            throw new AccionInvalidaEx(
+                    "No se puede eliminar: el repuesto fue utilizado en ordenes de trabajo.");
+        }
+
+        int filasAfectadas = DBHandler.eliminarRepuesto(idRepuesto);
+
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx("No se pudo eliminar el repuesto");
+        }
+
+        Repuesto repuesto = cacheRepuestos.obtener(idRepuesto);
+        cacheRepuestos.eliminar(idRepuesto);
+
+        return "El repuesto " + repuesto.getNombre()
+                + " (ID " + idRepuesto + ") fue eliminado";
     }
 
     // BUSCAR REPUESTOS POR NOMBRE
@@ -746,6 +776,32 @@ public class GestorTaller {
         return "EXITO: Se agrego " + repuesto.getNombre() + " (x" + cantidad + ") a la orden N: " + idOrden;
     }
 
+
+    public String eliminarModelo(int idModelo)
+            throws AccionInvalidaEx, SQLException {
+
+        if (!cacheModelo.existe(idModelo)) {
+            throw new AccionInvalidaEx("No existe modelo con ese id");
+        }
+
+        if (DBHandler.modeloTieneVehiculos(idModelo)) {
+            throw new AccionInvalidaEx(
+                    "No se puede eliminar: hay vehiculos registrados con este modelo.");
+        }
+
+        int filasAfectadas = DBHandler.eliminarModelo(idModelo);
+
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx("No se pudo eliminar el modelo");
+        }
+
+        Modelo modelo = cacheModelo.obtener(idModelo);
+        cacheModelo.eliminar(idModelo);
+
+        return "El modelo " + modelo.getMarca() + " " + modelo.getLinea()
+                + " (" + modelo.getAnio() + ") fue eliminado";
+    }
+
     public String finalizarYFacturarOrden(int idOrden, double horasTrabajadas)
             throws AccionInvalidaEx, OrdenInvalidaException, SQLException {
 
@@ -781,6 +837,14 @@ public class GestorTaller {
 
         return DBHandler.obtenerOrdenesActivas();
     }
+
+    public ArrayList<OrdenDeTrabajo> obtenerTodasLasOrdenes()
+            throws SQLException, AccionInvalidaEx {
+
+        return DBHandler.obtenerTodasLasOrdenes();
+    }
+
+
 
     // =========================================================
     // OBTENER LISTADOS
@@ -824,5 +888,11 @@ public class GestorTaller {
         return new ArrayList<>(
                 DBHandler.obtenerTodosLosRepuestos().values()
         );
+    }
+
+    private void validarDni(String dni) throws AccionInvalidaEx {
+        if (dni == null || !dni.matches("\\d{7,8}")) {
+            throw new AccionInvalidaEx("El DNI debe tener 7 u 8 digitos numericos");
+        }
     }
 }
