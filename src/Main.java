@@ -311,6 +311,7 @@ public class Main {
             System.out.println("6. Buscar orden por ID");
             System.out.println("7. Ver ordenes activas (Pendientes / En proceso)");
             System.out.println("8. Ver historial de todas las ordenes");
+            System.out.println("9. Eliminar orden finalizada");
             System.out.println("0. Volver al menu principal");
             System.out.print("Opcion: ");
 
@@ -352,6 +353,9 @@ public class Main {
                 }
                 case 8:
                     mostrarTodasLasOrdenes(gestor);
+                    break;
+                case 9:
+                    eliminarOrdenFinalizada(teclado, gestor);
                     break;
                 case 0:
                     break;
@@ -562,11 +566,14 @@ public class Main {
     {
         try {
             System.out.print("Patente: ");
+            mostrarPatentesVehiculos(gestor);
             String patente = teclado.nextLine();
             System.out.print("Kilometraje: ");
             double kilometraje = Double.parseDouble(teclado.nextLine().replace(',', '.'));
+            mostrarIdsModelos(gestor);
             System.out.print("ID del modelo: ");
             int idModelo = Integer.parseInt(teclado.nextLine());
+            mostrarDnisClientes(gestor);
             System.out.print("DNI del propietario: ");
             String dniPropietario = teclado.nextLine();
 
@@ -725,8 +732,10 @@ public class Main {
     {
         try {
             System.out.print("Patente del vehiculo: ");
+            mostrarPatentesVehiculos(gestor);
             String patente = teclado.nextLine();
             System.out.print("DNI del mecanico asignado: ");
+            mostrarDnisMecanicos(gestor);
             String dniMecanico = teclado.nextLine();
             System.out.print("Motivo de ingreso reportado por el cliente: ");
             String motivo = teclado.nextLine();
@@ -741,6 +750,7 @@ public class Main {
     {
         try {
             System.out.print("Numero de orden: ");
+            mostrarIdOrden(gestor);
             int idOrden = Integer.parseInt(teclado.nextLine());
             System.out.print("Diagnostico tecnico del taller: ");
             String diagnostico = teclado.nextLine();
@@ -757,6 +767,7 @@ public class Main {
     {
         try {
             System.out.print("Numero de orden: ");
+            mostrarIdOrden(gestor);
             int idOrden = Integer.parseInt(teclado.nextLine());
             System.out.print("ID del repuesto: ");
             int idRepuesto = Integer.parseInt(teclado.nextLine());
@@ -791,10 +802,13 @@ public class Main {
     {
         try {
             System.out.print("Patente del vehiculo: ");
+            mostrarPatentesVehiculos(gestor);
             String patente = teclado.nextLine();
             System.out.print("DNI del mecanico: ");
+            mostrarDnisMecanicos(gestor);
             String dniMecanico = teclado.nextLine();
             System.out.print("ID del repuesto: ");
+            mostrarIdsRepuestos(gestor);
             int idRepuesto = Integer.parseInt(teclado.nextLine());
             System.out.print("Cantidad utilizada: ");
             int cantidad = Integer.parseInt(teclado.nextLine());
@@ -824,6 +838,7 @@ public class Main {
     {
         try {
             System.out.print("Numero de orden: ");
+            mostrarIdOrden(gestor);
             OrdenDeTrabajo orden = gestor.buscarOrdenPorId(Integer.parseInt(teclado.nextLine()));
             System.out.println(orden);
         } catch (AccionInvalidaEx | SQLException ex) {
@@ -880,6 +895,25 @@ public class Main {
         }
     }
 
+    private static void mostrarIdOrden(GestorTaller gestor){
+        try {
+            ArrayList<OrdenDeTrabajo> ordenes = gestor.obtenerTodasLasOrdenes();
+
+            if(ordenes.isEmpty()) {
+                System.out.println("No hay ordenes registradas");
+            }
+
+            System.out.println("\n--- Ordenes ID ---");
+            for(OrdenDeTrabajo o: ordenes){
+                System.out.println(o.getId());
+            }
+            System.out.println("\n");
+        }catch (AccionInvalidaEx | SQLException ex){
+            System.out.println("Error al listar las ordenes: " + ex.getMessage());
+        }
+
+
+    }
 
 
     private static void mostrarDnisClientes(GestorTaller gestor) {
@@ -893,7 +927,7 @@ public class Main {
 
             System.out.println("\n--- DNI de clientes ---");
             for (Cliente c : clientes) {
-                System.out.println(c.getDni());
+                System.out.println(c.getDni() + " " + c.getNombre() + " " + c.getApellido());
             }
             System.out.println("\n");
         } catch (AccionInvalidaEx | SQLException ex) {
@@ -906,17 +940,17 @@ public class Main {
             ArrayList<Mecanico> mecanicos = gestor.obtenerMecanicos();
 
             if (mecanicos.isEmpty()) {
-                System.out.println("No hay clientes registrados.");
+                System.out.println("No hay mecanicos registrados.");
                 return;
             }
 
-            System.out.println("\n--- DNI de clientes ---");
+            System.out.println("\n--- DNI de mecanicos ---");
             for (Mecanico c : mecanicos) {
-                System.out.println(c.getDni());
+                System.out.println(c.getDni() + " " + c.getNombre() + " " + c.getNombre());
             }
             System.out.println("\n");
         } catch (AccionInvalidaEx | SQLException ex) {
-            System.out.println("Error al listar clientes: " + ex.getMessage());
+            System.out.println("Error al listar mecanicos: " + ex.getMessage());
         }
     }
 
@@ -931,7 +965,7 @@ public class Main {
 
             System.out.println("\n--- ID de modelos ---");
             for (Modelo m : modelos) {
-                System.out.println(m.getId());
+                System.out.println(m.getId() + " " + m.getMarca() + " " + m.getLinea() + " " + m.getAnio());
             }
         } catch (SQLException ex) {
             System.out.println("Error al listar modelos: " + ex.getMessage());
@@ -967,7 +1001,7 @@ public class Main {
 
             System.out.println("\n--- ID de repuestos ---");
             for (Repuesto r : repuestos) {
-                System.out.println(r.getIdRepuesto());
+                System.out.println(r.getIdRepuesto() + " " + r.getNombre() + " " + r.getStock());
             }
         } catch (AccionInvalidaEx | SQLException ex) {
             System.out.println("Error al listar repuestos: " + ex.getMessage());
@@ -989,6 +1023,40 @@ public class Main {
             System.out.println("Error al eliminar modelo: " + ex.getMessage());
         } catch (NumberFormatException ex) {
             System.out.println("Error: El ID debe ser numerico.");
+        }
+    }
+
+    //METODO ELIMINAR ORDEN FINALIZADA
+    private static void eliminarOrdenFinalizada(Scanner teclado, GestorTaller gestor) {
+        mostrarIdsOrdenesFinalizadas(gestor);
+
+        try {
+            System.out.print("Numero de orden finalizada a eliminar: ");
+            int idOrden = Integer.parseInt(teclado.nextLine());
+            System.out.println(gestor.eliminarOrdenFinalizada(idOrden));
+        } catch (AccionInvalidaEx | OrdenInvalidaException | SQLException ex) {
+            System.out.println("Error al eliminar orden: " + ex.getMessage());
+        } catch (NumberFormatException ex) {
+            System.out.println("Error: El numero de orden debe ser numerico.");
+        }
+    }
+
+    private static void mostrarIdsOrdenesFinalizadas(GestorTaller gestor) {
+        try {
+            ArrayList<OrdenDeTrabajo> finalizadas = gestor.obtenerOrdenesFinalizadas();
+
+            if (finalizadas.isEmpty()) {
+                System.out.println("No hay ordenes finalizadas registradas.");
+                return;
+            }
+
+            System.out.println("\n--- Ordenes FINALIZADAS (ID) ---");
+            for (OrdenDeTrabajo o : finalizadas) {
+                System.out.println(o.getId());
+            }
+            System.out.println();
+        } catch (AccionInvalidaEx | SQLException ex) {
+            System.out.println("Error al listar ordenes finalizadas: " + ex.getMessage());
         }
     }
 

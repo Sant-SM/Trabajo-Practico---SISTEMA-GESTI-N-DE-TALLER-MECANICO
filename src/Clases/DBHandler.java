@@ -199,6 +199,36 @@ public class DBHandler {
         return idAgregado;
     }
 
+    //ELIMINAR ORDEN DE TRABAJO
+    public static int eliminarOrdenDeTrabajo(int idOrden) throws SQLException {
+        String sqlDeleteDetalles = "DELETE FROM detalles_orden WHERE id_orden = ?";
+        String sqlDeleteOrden = "DELETE FROM ordenes_trabajo WHERE id_orden = ?";
+
+        try (Connection connection = DriverManager.getConnection(url)) {
+            connection.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement psDet = connection.prepareStatement(sqlDeleteDetalles)) {
+                    psDet.setInt(1, idOrden);
+                    psDet.executeUpdate();
+                }
+
+                int filasAfectadas;
+                try (PreparedStatement psOrd = connection.prepareStatement(sqlDeleteOrden)) {
+                    psOrd.setInt(1, idOrden);
+                    filasAfectadas = psOrd.executeUpdate();
+                }
+
+                connection.commit();
+                return filasAfectadas;
+
+            } catch (SQLException ex) {
+                connection.rollback();
+                throw ex;
+            }
+        }
+    }
+
     //GUARDAR MODELO
     public static int guardarModelo(String marca, String linea, int anio) throws SQLException {
 

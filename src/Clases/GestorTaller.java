@@ -733,6 +733,41 @@ public class GestorTaller {
         return "EXITO: Vehiculo ingresado. Orden N: " + idGenerado + " abierta en estado PENDIENTE.";
     }
 
+    public String eliminarOrdenFinalizada(int idOrden)
+            throws AccionInvalidaEx, OrdenInvalidaException, SQLException {
+
+        OrdenDeTrabajo orden = buscarOrdenPorId(idOrden);
+
+        if (orden.getEstadoOrden() != EstadoOrden.FINALIZADA) {
+            throw new OrdenInvalidaException(
+                    "Solo se pueden eliminar ordenes que esten en estado FINALIZADA."
+            );
+        }
+
+        int filasAfectadas = DBHandler.eliminarOrdenDeTrabajo(idOrden);
+
+        if (filasAfectadas != 1) {
+            throw new AccionInvalidaEx("No se pudo eliminar la orden de trabajo");
+        }
+
+        return "EXITO: La orden finalizada N: " + idOrden + " fue eliminada.";
+    }
+
+    public ArrayList<OrdenDeTrabajo> obtenerOrdenesFinalizadas()
+            throws SQLException, AccionInvalidaEx {
+
+        ArrayList<OrdenDeTrabajo> finalizadas = new ArrayList<>();
+
+        for (OrdenDeTrabajo orden : obtenerTodasLasOrdenes()) {
+            if (orden.getEstadoOrden() == EstadoOrden.FINALIZADA) {
+                finalizadas.add(orden);
+            }
+        }
+
+        return finalizadas;
+    }
+
+
     public String registrarDiagnosticoOrden(int idOrden, String diagnostico) throws AccionInvalidaEx, OrdenInvalidaException, SQLException {
 
         OrdenDeTrabajo orden = buscarOrdenPorId(idOrden);
